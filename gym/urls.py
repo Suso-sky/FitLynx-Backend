@@ -21,7 +21,7 @@ urlpatterns = [
     path('ReservasPerUser/', ReservasPorUsuarioView.as_view(), name='Reservas por Usuario'),
     path('GetReservas/', GetReservasView.as_view(), name='Reservas'),
     path('Penalizar/', PenalizarView.as_view(), name='Penalizar'),
-     path('ActualizarHorario/', ActualizarHorarioView.as_view(), name='Actualizar Horario'),
+    path('ActualizarHorario/', ActualizarHorarioView.as_view(), name='Actualizar Horario'),
     path('CrearAsistencia/', CrearAsistencia.as_view(), name='Crear Asistencia'),
 ]
 

@@ -262,7 +262,7 @@ class ActualizarHorarioView(APIView):
             close_time = schedule_data.get('closeTime')
 
             try:
-                horario_dia = HorarioDia.objects.get_or_create(dia=day)
+                horario_dia, created = HorarioDia.objects.get_or_create(dia=day)
                 horario_dia.closed = closed
                 horario_dia.openTime = open_time if not closed else None
                 horario_dia.closeTime = close_time if not closed else None

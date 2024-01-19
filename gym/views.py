@@ -8,7 +8,7 @@ from django.views import View
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, date
 from django.http import JsonResponse
 import json
 
@@ -80,8 +80,8 @@ class ReporteView(View):
             'Nombre': [asistencia.usuario.nombre for asistencia in asistencias],
             'Programa': [asistencia.usuario.programa for asistencia in asistencias],
             'Código Estudiantil': [asistencia.usuario.codigo_estudiantil for asistencia in asistencias],
-            'Fecha': [asistencia.fecha for asistencia in asistencias],
-            'Hora': [asistencia.hora for asistencia in asistencias],
+            'Fecha': [asistencia.fecha.strftime('%Y-%m-%d') if isinstance(asistencia.fecha, date) else asistencia.fecha for asistencia in asistencias],
+            'Hora': [asistencia.hora.strftime('%H:%M:%S') if isinstance(asistencia.hora, time) else asistencia.hora for asistencia in asistencias],
             'Cantidad de Horas': [asistencia.cantidad_horas for asistencia in asistencias],
         }
 

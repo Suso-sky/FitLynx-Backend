@@ -25,5 +25,5 @@ class AsistenciaAdmin(admin.ModelAdmin):
 
 @admin.register(HorarioDia)
 class HorarioDiaAdmin(admin.ModelAdmin):
-    list_display = ('dia', 'hora_apertura', 'hora_cierre')
+    list_display = ('dia', 'openTime', 'closeTime')
     search_fields = ('dia',)

@@ -120,7 +120,7 @@ class CreateReservaView(APIView):
             # Obtener datos del cuerpo de la solicitud
             data = json.loads(request.body)
             uid = data.get('uid')
-            fecha_reserva = datetime.strptime(request.data.get('fecha'), '%Y-%m-%d')  #cambiar fecha por fecha_reserva
+            fecha_reserva = datetime.strptime(request.data.get('fecha_reserva'), '%Y-%m-%d')  
             fecha_actual = datetime.strptime(request.data.get('fecha_actual'), '%Y-%m-%d') 
             hora = datetime.strptime(data.get('hora'), '%H:%M').time()  
             cantidad_horas = data.get('cantHoras')

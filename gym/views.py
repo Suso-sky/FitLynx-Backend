@@ -169,7 +169,12 @@ class CreateReservaView(APIView):
                     return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."})
                                 
              # Validar Horario
-            horario_dia = HorarioDia.objects.get(dia=fecha_reserva.strftime('%A'))
+            fecha_reserva_day = fecha_reserva.strftime('%A')
+            # Asegúrate de que fecha_reserva_day coincida con el formato almacenado en el modelo HorarioDia
+            try:
+                horario_dia = HorarioDia.objects.get(dia=fecha_reserva_day)
+            except HorarioDia.DoesNotExist:
+                return Response({'success': False, 'message': f'El día {fecha_reserva_day} no tiene un horario definido.'}, status=status.HTTP_400_BAD_REQUEST)
 
             if (
                 horario_dia.closed or

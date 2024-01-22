@@ -138,6 +138,7 @@ class CreateReservaView(APIView):
                     return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
             
             # Validar el aforo
+                
             aforo_max = 3
             # Calcular el intervalo de tiempo para la nueva reserva
             inicio_nueva_reserva = datetime.combine(fecha_reserva, hora)
@@ -150,7 +151,7 @@ class CreateReservaView(APIView):
                 hora__gte=inicio_nueva_reserva
             )
 
-                        # Calcular el aforo ocupado en el intervalo de la nueva reserva
+            # Calcular el aforo ocupado en el intervalo de la nueva reserva
             aforo_ocupado = sum(reserva.cantidad_horas for reserva in reservas_superpuestas)
 
             # Verificar si el aforo estaría completo después de agregar la nueva reserva
@@ -170,27 +171,40 @@ class CreateReservaView(APIView):
                                 
              # Validar Horario
             fecha_reserva_day = fecha_reserva.strftime('%A')
-            # Asegúrate de que fecha_reserva_day coincida con el formato almacenado en el modelo HorarioDia
+
+            days = { "Monday": "Lunes",
+                     "Tuesday": "Martes",
+                     "Wednesday": "Miércoles", 
+                     "Thursday": "Jueves",
+                     "Friday": "Viernes",
+                     "Saturday": "Sábado", 
+                     "Sunday": "Domingo",
+                    }
             try:
-                horario_dia = HorarioDia.objects.get(dia=fecha_reserva_day)
+                horario_dia = HorarioDia.objects.get(dia=days[fecha_reserva_day])
             except HorarioDia.DoesNotExist:
                 return Response({'success': False, 'message': f'El día {fecha_reserva_day} no tiene un horario definido.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if (
-                horario_dia.closed or
-                (horario_dia.openTime <= hora <= horario_dia.closeTime) and (hora + timedelta(hours=cantidad_horas) <= horario_dia.closeTime)
-            ):
-                # Crear la reserva
-                reserva = Reserva.objects.create(
-                    usuario=usuario,
-                    fecha=fecha_reserva,
-                    hora=hora,
-                    cantidad_horas=cantidad_horas
-                )
+            # Verificar si el dia está cerrado
+            if  horario_dia.closed:
+                 return Response({'success': False, 'message': f'El día {days[fecha_reserva_day]} está cerrado el gimnasio.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            open_datetime = datetime.combine(fecha_reserva, horario_dia.openTime)
+            close_datetime = datetime.combine(fecha_reserva, horario_dia.closeTime)
 
-                return Response({"success": True, "message": "Reserva creada con éxito."})
-            else:
+            # Verificar Rango de asistencia 
+            if not (open_datetime <= datetime.combine(fecha_reserva, hora) <= close_datetime and datetime.combine(fecha_reserva, hora) + timedelta(hours=cantidad_horas) <= close_datetime):
                 return Response({"success": False, "message": "El horario no está dentro del rango permitido."}, status=400)
+            
+            # Crear la reserva
+            reserva = Reserva.objects.create(
+                usuario=usuario,
+                fecha=fecha_reserva,
+                hora=hora,
+                cantidad_horas=cantidad_horas
+            )
+
+            return Response({"success": True, "message": "Reserva creada con éxito."}) 
         
         except User.DoesNotExist:
             return Response({"success": False, "message": "El usuario no existe."}, status=400)

@@ -1,7 +1,13 @@
 from django.db import models
 
 class HorarioDia(models.Model):
-    DIA_CHOICES = [ ('Lunes', 'Lunes'), ('Martes', 'Martes'), ('Miércoles', 'Miércoles'),  ('Jueves', 'Jueves'), ('Viernes', 'Viernes')]
+    DIA_CHOICES = [ ('Lunes', 'Lunes'),
+                    ('Martes', 'Martes'),
+                    ('Miércoles', 'Miércoles'),  
+                    ('Jueves', 'Jueves'), 
+                    ('Viernes', 'Viernes'),
+                    ('Sábado', 'Sábado'),
+                    ('Domingo','Domingo')]
 
     dia = models.CharField(max_length=10, choices=DIA_CHOICES, unique=True)
     closed = models.BooleanField(default=True)

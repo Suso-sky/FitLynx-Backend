@@ -126,10 +126,6 @@ class CreateReservaView(APIView):
             cantidad_horas = data.get('cantHoras')
             usuario = User.objects.get(uid=uid)
 
-            # Validar correo
-
-            if usuario.email.find("@unillanos.edu.co") <= 0:
-                return Response({"success": False, "message": "Debes iniciar sesión con un correo institucional para poder reservar."})
             
 
             # Validar penalización

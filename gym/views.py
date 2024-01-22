@@ -220,10 +220,10 @@ class CreateReservaView(APIView):
             return Response({"success": False, "message": str(e)}, status=500)
        
 class AsistenciasPorUsuarioView(APIView):
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
-            # Obtener el uid del cuerpo de la solicitud
-            uid = request.data.get('uid')
+            # Obtener el uid de los parámetros de la URL
+            uid = request.query_params.get('uid')
 
             # Validar si el usuario existe
             usuario = User.objects.get(uid=uid)
@@ -239,6 +239,7 @@ class AsistenciasPorUsuarioView(APIView):
         
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
         
 class GetReservasView(APIView):
     def get(self, request, *args, **kwargs):

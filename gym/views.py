@@ -126,6 +126,12 @@ class CreateReservaView(APIView):
             cantidad_horas = data.get('cantHoras')
             usuario = User.objects.get(uid=uid)
 
+            # Validar correo
+
+            if usuario.email.find("@unillanos.edu.co") <= 0:
+                return Response({"success": False, "message": "Debes iniciar sesión con un correo institucional para poder reservar."})
+            
+
             # Validar penalización
             
             penalizaciones = Penalizacion.objects.filter(usuario=usuario)
@@ -151,6 +157,8 @@ class CreateReservaView(APIView):
                 hora__gte=inicio_nueva_reserva
             )
 
+            
+
             # Calcular el aforo ocupado en el intervalo de la nueva reserva
             aforo_ocupado = sum(reserva.cantidad_horas for reserva in reservas_superpuestas)
 
@@ -175,8 +183,8 @@ class CreateReservaView(APIView):
             if Reservas_usuario:
                  return Response({"success": False, "message": "Ya tienes una reserva realizada."})
 
-
             # Validar Horario
+
             fecha_reserva_day = fecha_reserva.strftime('%A')
 
             days = { "Monday": "Lunes",
@@ -192,14 +200,14 @@ class CreateReservaView(APIView):
             except HorarioDia.DoesNotExist:
                 return Response({'success': False, 'message': f'El día {fecha_reserva_day} no tiene un horario definido.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Verificar si el dia está cerrado
+              # Verificar si el dia está cerrado
             if  horario_dia.closed:
                  return Response({'success': False, 'message': f'El día {days[fecha_reserva_day]} está cerrado el gimnasio.'}, status=status.HTTP_400_BAD_REQUEST)
             
             open_datetime = datetime.combine(fecha_reserva, horario_dia.openTime)
             close_datetime = datetime.combine(fecha_reserva, horario_dia.closeTime)
 
-            # Verificar Rango de asistencia 
+               # Verificar Rango de asistencia 
             if not (open_datetime <= datetime.combine(fecha_reserva, hora) <= close_datetime and datetime.combine(fecha_reserva, hora) + timedelta(hours=cantidad_horas) <= close_datetime):
                 return Response({"success": False, "message": "El horario no está dentro del rango permitido."}, status=400)
             

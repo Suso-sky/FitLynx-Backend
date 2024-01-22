@@ -131,7 +131,10 @@ class CreateReservaView(APIView):
             if usuario.email.find("@unillanos.edu.co") <= 0:
                 return Response({"success": False, "message": "Debes iniciar sesión con un correo institucional para poder reservar."})
             
-            
+            # Validar correo
+
+            if usuario.email.find("@unillanos.edu.co") <= 0:
+                return Response({"success": False, "message": "Debes iniciar sesión con un correo institucional para poder reservar."})
 
             # Validar penalización
             

@@ -55,13 +55,19 @@ class CreateUserView(APIView):
         codigo_estudiantil = data.get('codigo')
         email = data.get('email')
 
+         # Validar correo
+
+        if email.find("@unillanos.edu.co") <= 0:
+            return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."})
+
+
         try:
             # Verificar si el usuario ya existe
             user_existente = User.objects.get(uid=uid)
             return Response({"success": False, 'message': 'El usuario ya existe.'}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             # Crear un nuevo usuario
-            nuevo_usuario = User.objects.create(
+            User.objects.create(
                 uid=uid,
                 nombre=nombre,
                 programa=programa,
@@ -131,11 +137,6 @@ class CreateReservaView(APIView):
             if usuario.email.find("@unillanos.edu.co") <= 0:
                 return Response({"success": False, "message": "Debes iniciar sesión con un correo institucional para poder reservar."})
             
-            # Validar correo
-
-            if usuario.email.find("@unillanos.edu.co") <= 0:
-                return Response({"success": False, "message": "Debes iniciar sesión con un correo institucional para poder reservar."})
-
             # Validar penalización
             
             penalizaciones = Penalizacion.objects.filter(usuario=usuario)
@@ -251,7 +252,6 @@ class AsistenciasPorUsuarioView(APIView):
         
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
-
         
 class GetReservasView(APIView):
     def get(self, request, *args, **kwargs):

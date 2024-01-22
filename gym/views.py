@@ -168,8 +168,15 @@ class CreateReservaView(APIView):
                     inicio_nueva_reserva < reserva_fin <= fin_nueva_reserva
                 ):
                     return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."})
-                                
-             # Validar Horario
+
+            # Validar si tiene alguna reserva activa    
+
+            Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
+            if Reservas_usuario:
+                 return Response({"success": False, "message": "Ya tienes una reserva realizada."})
+
+
+            # Validar Horario
             fecha_reserva_day = fecha_reserva.strftime('%A')
 
             days = { "Monday": "Lunes",

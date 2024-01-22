@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from .models import User, Reserva, Penalizacion, HorarioDia, Asistencia
-from .serializers import ReservaSerializer
+from .serializers import ReservaSerializer, AsistenciaSerializer, HorarioDiaSerializer
 from django.http import HttpResponse
 from django.views import View
 import pandas as pd
@@ -212,7 +212,7 @@ class CreateReservaView(APIView):
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=500)
        
-class ReservasPorUsuarioView(APIView):
+class AsistenciasPorUsuarioView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Obtener el uid del cuerpo de la solicitud
@@ -222,8 +222,8 @@ class ReservasPorUsuarioView(APIView):
             usuario = User.objects.get(uid=uid)
 
             # Obtener las reservas para el usuario
-            reservas_usuario = Reserva.objects.filter(usuario=usuario)
-            serializer = ReservaSerializer(reservas_usuario, many=True)
+            Asistencias_usuario = Asistencia.objects.filter(usuario=usuario)
+            serializer = ReservaSerializer(Asistencias_usuario, many=True)
 
             return JsonResponse({'success': True, 'reservas': serializer.data})
         
@@ -239,6 +239,18 @@ class GetReservasView(APIView):
             # Obtener todas las reservas
             reservas = Reserva.objects.all()
             serializer = ReservaSerializer(reservas, many=True)
+
+            return Response({'success': True, 'reservas': serializer.data})
+        
+        except Exception as e:
+            return Response({'success': False, 'message': str(e)}, status=500)
+
+class GetHorariosView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Obtener todos los horarios 
+            horarios = HorarioDia.objects.all()
+            serializer = ReservaSerializer(horarios, many=True)
 
             return Response({'success': True, 'reservas': serializer.data})
         

@@ -160,6 +160,7 @@ class CreateReservaView(APIView):
                 hora__lte=fin_nueva_reserva,
                 hora_fin__gte=inicio_nueva_reserva
             )
+            
             print(reservas_superpuestas.count())
 
             if reservas_superpuestas.count() == aforo_max:
@@ -226,7 +227,7 @@ class AsistenciasPorUsuarioView(APIView):
 
             # Obtener las reservas para el usuario
             Asistencias_usuario = Asistencia.objects.filter(usuario=usuario)
-            serializer = ReservaSerializer(Asistencias_usuario, many=True)
+            serializer = AsistenciaSerializer(Asistencias_usuario, many=True)
 
             return JsonResponse({'success': True, 'reservas': serializer.data})
         
@@ -253,7 +254,7 @@ class GetHorariosView(APIView):
         try:
             # Obtener todos los horarios 
             horarios = HorarioDia.objects.all()
-            serializer = ReservaSerializer(horarios, many=True)
+            serializer = HorarioDiaSerializer(horarios, many=True)
 
             return Response({'success': True, 'reservas': serializer.data})
         

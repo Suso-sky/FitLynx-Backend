@@ -131,10 +131,6 @@ class CreateReservaView(APIView):
             cantidad_horas = data.get('cantHoras')
             usuario = User.objects.get(uid=uid)
 
-            # Validar correo
-
-            if usuario.email.find("@unillanos.edu.co") <= 0:
-                return Response({"success": False, "message": "Debes iniciar sesión con un correo institucional para poder reservar."})
             
             # Validar penalización
             
@@ -147,22 +143,21 @@ class CreateReservaView(APIView):
                 if datetime.strptime(fecha_inicio_str, '%Y-%m-%d') <= fecha_actual <= datetime.strptime(fecha_fin_str, '%Y-%m-%d'):
                     return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
             
+
             # Validar el aforo
               
             aforo_max = 3
-            # Calcular el intervalo de tiempo para la nueva reserva
+              # Calcular el intervalo de tiempo para la nueva reserva
             inicio_nueva_reserva = datetime.combine(fecha_reserva, hora)
             fin_nueva_reserva = inicio_nueva_reserva + timedelta(hours=cantidad_horas) 
          
-            # Verificar si hay reservas existentes que se superponen
+              # Verificar las reservas existentes que se superponen
             reservas_superpuestas = Reserva.objects.filter(
                 fecha=fecha_reserva,
                 hora__lte=fin_nueva_reserva,
                 hora_fin__gte=inicio_nueva_reserva
             )
             
-            print(reservas_superpuestas.count())
-
             if reservas_superpuestas.count() == aforo_max:
                 return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."})
 

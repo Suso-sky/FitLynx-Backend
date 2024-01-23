@@ -1,6 +1,11 @@
 from django.db import models
 from datetime import datetime, timedelta, date
 
+class Gym(models.Model):
+    gym_id = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=255)
+    aforo_max = models.PositiveIntegerField(default=0)
+
 class HorarioDia(models.Model):
     DIA_CHOICES = [ ('Lunes', 'Lunes'),
                     ('Martes', 'Martes'),
@@ -47,7 +52,6 @@ class Reserva(models.Model):
 
     def __str__(self):
         return f'{self.usuario.nombre} - {self.cantidad_horas} hora(s) el {self.fecha} a las {self.hora}'
-
 
 class Penalizacion(models.Model):
     id_penalizacion = models.AutoField(primary_key=True)

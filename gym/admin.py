@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import User, Reserva, Penalizacion, Asistencia, HorarioDia
+from .models import Gym, User, Reserva, Penalizacion, Asistencia, HorarioDia
+
+@admin.register(Gym)
+class GymAdmin(admin.ModelAdmin):
+    list_display = ('gym_id', 'nombre', 'aforo_max')
+    search_fields = ('nombre', 'aforo_max')
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):

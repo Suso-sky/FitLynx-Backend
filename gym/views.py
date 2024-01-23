@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from .models import User, Reserva, Penalizacion, HorarioDia, Asistencia
+from .models import User, Reserva, Penalizacion, HorarioDia, Asistencia, Gym
 from .serializers import ReservaSerializer, AsistenciaSerializer, HorarioDiaSerializer
 from django.http import HttpResponse
 from django.views import View
@@ -61,11 +61,11 @@ class CreateUserView(APIView):
             return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."})
         
         try:
-            # Verificar si el usuario ya existe
+        # Verificar si el usuario ya existe
             user_existente = User.objects.get(uid=uid)
             return Response({"success": False, 'message': 'El usuario ya existe.'}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
-            # Crear un nuevo usuario
+        # Crear un nuevo usuario
             User.objects.create(
                 uid=uid,
                 nombre=nombre,
@@ -145,8 +145,10 @@ class CreateReservaView(APIView):
             
 
             # Validar el aforo
-              
+                
+            #aforo_max = Gym.objects.get(nombre='Unillanos').aforo_max
             aforo_max = 3
+            
               # Calcular el intervalo de tiempo para la nueva reserva
             inicio_nueva_reserva = datetime.combine(fecha_reserva, hora)
             fin_nueva_reserva = inicio_nueva_reserva + timedelta(hours=cantidad_horas) 

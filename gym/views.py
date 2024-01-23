@@ -11,7 +11,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from datetime import datetime, time, timedelta, date
 from django.http import JsonResponse
 import json
-
+from django.db.models import Q
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -59,8 +59,7 @@ class CreateUserView(APIView):
 
         if email.find("@unillanos.edu.co") <= 0:
             return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."})
-
-
+        
         try:
             # Verificar si el usuario ya existe
             user_existente = User.objects.get(uid=uid)
@@ -149,45 +148,29 @@ class CreateReservaView(APIView):
                     return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
             
             # Validar el aforo
-                
+              
             aforo_max = 3
             # Calcular el intervalo de tiempo para la nueva reserva
             inicio_nueva_reserva = datetime.combine(fecha_reserva, hora)
-            fin_nueva_reserva = inicio_nueva_reserva + timedelta(hours=cantidad_horas)
-
+            fin_nueva_reserva = inicio_nueva_reserva + timedelta(hours=cantidad_horas) 
+         
             # Verificar si hay reservas existentes que se superponen
             reservas_superpuestas = Reserva.objects.filter(
                 fecha=fecha_reserva,
-                hora__lt=fin_nueva_reserva,
-                hora__gte=inicio_nueva_reserva
+                hora__lte=fin_nueva_reserva,
+                hora_fin__gte=inicio_nueva_reserva
             )
+            print(reservas_superpuestas.count())
 
-            
-
-            # Calcular el aforo ocupado en el intervalo de la nueva reserva
-            aforo_ocupado = sum(reserva.cantidad_horas for reserva in reservas_superpuestas)
-
-            # Verificar si el aforo estaría completo después de agregar la nueva reserva
-            if aforo_ocupado >= aforo_max:
+            if reservas_superpuestas.count() == aforo_max:
                 return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."})
 
-           # Verificar si al agregar la nueva reserva, el aforo estaría completo en alguna parte del intervalo
-            for reserva in reservas_superpuestas:
-                reserva_inicio = datetime.combine(reserva.fecha, reserva.hora)
-                reserva_fin = reserva_inicio + timedelta(hours=reserva.cantidad_horas)
-
-                if (
-                    inicio_nueva_reserva <= reserva_inicio < fin_nueva_reserva or
-                    inicio_nueva_reserva < reserva_fin <= fin_nueva_reserva
-                ):
-                    return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."})
-
             # Validar si tiene alguna reserva activa    
-
-            Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
-            if Reservas_usuario:
-                 return Response({"success": False, "message": "Ya tienes una reserva realizada."})
-
+            
+            #Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
+            #if Reservas_usuario:
+            #     return Response({"success": False, "message": "Ya tienes una reserva realizada."})
+            
             # Validar Horario
 
             fecha_reserva_day = fecha_reserva.strftime('%A')

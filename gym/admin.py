@@ -8,7 +8,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'fecha', 'hora', 'cantidad_horas', 'id_reserva')
+    list_display = ('usuario', 'fecha', 'hora', 'cantidad_horas','hora_fin', 'id_reserva')
     list_filter = ('usuario', 'fecha')
     search_fields = ('usuario__codigo_estudiantil', 'fecha')
 

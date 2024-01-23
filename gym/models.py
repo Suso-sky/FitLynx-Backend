@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime, timedelta, date
 
 class HorarioDia(models.Model):
     DIA_CHOICES = [ ('Lunes', 'Lunes'),
@@ -33,6 +34,16 @@ class Reserva(models.Model):
     fecha = models.DateField()
     hora = models.TimeField()
     cantidad_horas = models.IntegerField(default=1)
+    hora_fin = models.TimeField(blank=True, null=True)  # Nuevo campo
+
+    def save(self, *args, **kwargs):
+        # Calcular la hora de finalización al guardar la reserva
+        if self.hora and self.cantidad_horas:
+            hora_fin = (datetime.combine(date(1, 1, 1), self.hora) +
+                        timedelta(hours=self.cantidad_horas)).time()
+            self.hora_fin = hora_fin
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.usuario.nombre} - {self.cantidad_horas} hora(s) el {self.fecha} a las {self.hora}'

@@ -20,9 +20,12 @@ class PenalizacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AsistenciaSerializer(serializers.ModelSerializer):
+
+    usuario = UserSerializer() 
+
     class Meta:
         model = Asistencia
-        fields = '__all__'
+        fields = ('id_asistencia', 'usuario', 'fecha', 'hora', 'cantidad_horas')
 
 class HorarioDiaSerializer(serializers.ModelSerializer):
     class Meta:

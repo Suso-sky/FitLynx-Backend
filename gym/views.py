@@ -253,7 +253,7 @@ class GetHorariosView(APIView):
             horarios = HorarioDia.objects.all()
             serializer = HorarioDiaSerializer(horarios, many=True)
 
-            return Response({'success': True, 'reservas': serializer.data})
+            return Response({'success': True, 'horarios': serializer.data})
         
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=500)

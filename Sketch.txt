@@ -1,2 +1,5 @@
-Membresías:
+Pending:
+    Poder cancelar Reservas desde usuario
+    Eliminar botones inutiles, interfaz mas minimalista
+    
     

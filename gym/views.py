@@ -134,23 +134,32 @@ class CreateReservaView(APIView):
 
             
             # Validar penalización
-            
-            penalizacion = Penalizacion.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
-
-            if penalizacion is not None:
-                fecha_fin_str = penalizacion.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
+            try:
+                penalizacion_usuario = Penalizacion.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
+                fecha_fin_str = penalizacion_usuario.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
                 return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
             
-            # Validar Carrera y Membresía
+            except Penalizacion.DoesNotExist:
+                
+                print(f"{usuario.nombre} no tiene penalizaciones activas")
+                    
             
-            membresia_usuario = Membresia.objects.get(usuario=usuario, fecha_fin__gte = fecha_actual)
-            ultimo_lunes = fecha_actual + relativedelta(weekday=MO(-1))
-            asistencias_usuario = Asistencia.objects.filter(usuario=usuario, fecha__gte=ultimo_lunes)
-            is_edu_fis = usuario.codigo_estudiantil.startswith('14810')
-            
-            if (membresia_usuario is not None) and ((is_edu_fis and asistencias_usuario.count() >= 4) or (not is_edu_fis and asistencias_usuario.count() >= 2)):
-                 return Response({"success": False, "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."})
+            # Validar Programa y Membresía
+            try:
+                membresia_usuario = Membresia.objects.get(usuario=usuario, fecha_fin__gte = fecha_actual)
+                print(f"{usuario.nombre} tiene una membresía activa hasta el {membresia_usuario.fecha_fin}")                
+                
+            except Membresia.DoesNotExist:
+                
+                print(f"{usuario.nombre} no tiene membresías activas")                
+                ultimo_lunes = fecha_actual + relativedelta(weekday=MO(-1))
+                asistencias_usuario = Asistencia.objects.filter(usuario=usuario, fecha__gte=ultimo_lunes)
+                is_edu_fis = str(usuario.codigo_estudiantil).startswith('14810')
 
+                if (is_edu_fis and asistencias_usuario.count() >= 4) or (not is_edu_fis and asistencias_usuario.count() >= 2):
+                    return Response({"success": False, "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."})
+        
+            
             # Validar el aforo
                 
             aforo_max = Gym.objects.get(nombre='Unillanos').aforo_max
@@ -229,11 +238,15 @@ class AsistenciasPorUsuarioView(APIView):
             # Validar si el usuario existe
             usuario = User.objects.get(uid=uid)
 
-            # Obtener las reservas para el usuario
-            Asistencias_usuario = Asistencia.objects.filter(usuario=usuario)
-            serializer = AsistenciaSerializer(Asistencias_usuario, many=True)
+            # Obtener las Asistencias del usuario
+            asistencias_usuario = Asistencia.objects.filter(usuario=usuario)
+            asistencias_serializer = AsistenciaSerializer(asistencias_usuario, many=True)
 
-            return JsonResponse({'success': True, 'reservas': serializer.data})
+            # Obtener las Reservas del usuario
+            reservas_usuario = Reserva.objects.filter(usuario=usuario)
+            reservas_serializer = ReservaSerializer(reservas_usuario, many=True)
+
+            return JsonResponse({'success': True, 'asistencias': asistencias_serializer, 'reservas': reservas_serializer})
         
         except User.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'El usuario no existe.'}, status=400)

@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from .models import User, Reserva, Penalizacion, HorarioDia, Asistencia, Gym
+from .models import User, Reserva, Penalizacion, HorarioDia, Asistencia, Gym, Membresia
 from .serializers import ReservaSerializer, AsistenciaSerializer, HorarioDiaSerializer
 from django.http import HttpResponse
 from django.views import View
@@ -12,6 +12,7 @@ from datetime import datetime, time, timedelta, date
 from django.http import JsonResponse
 import json
 from django.db.models import Q
+from dateutil.relativedelta import relativedelta, MO
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -134,21 +135,26 @@ class CreateReservaView(APIView):
             
             # Validar penalización
             
-            penalizaciones = Penalizacion.objects.filter(usuario=usuario)
-            
-            for penalizacion in penalizaciones:
-                fecha_inicio_str = penalizacion.fecha_inicio.strftime('%Y-%m-%d')
-                fecha_fin_str = penalizacion.fecha_fin.strftime('%Y-%m-%d')
+            penalizacion = Penalizacion.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
 
-                if datetime.strptime(fecha_inicio_str, '%Y-%m-%d') <= fecha_actual <= datetime.strptime(fecha_fin_str, '%Y-%m-%d'):
-                    return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
+            if penalizacion is not None:
+                fecha_fin_str = penalizacion.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
+                return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
             
-            # Validar Membresía
+            # Validar Carrera y Membresía
+            
+            membresia_usuario = Membresia.objects.get(usuario=usuario, fecha_fin__gte = fecha_actual)
+            ultimo_lunes = fecha_actual + relativedelta(weekday=MO(-1))
+            asistencias_usuario = Asistencia.objects.filter(usuario=usuario, fecha__gte=ultimo_lunes)
+            is_edu_fis = usuario.codigo_estudiantil.startswith('14810')
+            
+            if (membresia_usuario is not None) and ((is_edu_fis and asistencias_usuario.count() >= 4) or (not is_edu_fis and asistencias_usuario.count() >= 2)):
+                 return Response({"success": False, "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."})
 
             # Validar el aforo
                 
-            #aforo_max = Gym.objects.get(nombre='Unillanos').aforo_max
-            aforo_max = 3
+            aforo_max = Gym.objects.get(nombre='Unillanos').aforo_max
+            #aforo_max = 3
             
               # Calcular el intervalo de tiempo para la nueva reserva
             inicio_nueva_reserva = datetime.combine(fecha_reserva, hora)
@@ -161,7 +167,7 @@ class CreateReservaView(APIView):
                 hora_fin__gte=inicio_nueva_reserva
             )
             
-            if reservas_superpuestas.count() == aforo_max:
+            if reservas_superpuestas.count() >= aforo_max:
                 return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."})
 
             # Validar si tiene alguna reserva activa    

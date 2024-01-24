@@ -143,6 +143,7 @@ class CreateReservaView(APIView):
                 if datetime.strptime(fecha_inicio_str, '%Y-%m-%d') <= fecha_actual <= datetime.strptime(fecha_fin_str, '%Y-%m-%d'):
                     return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
             
+            # Validar Membresía
 
             # Validar el aforo
                 
@@ -165,9 +166,9 @@ class CreateReservaView(APIView):
 
             # Validar si tiene alguna reserva activa    
             
-            #Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
-            #if Reservas_usuario:
-            #     return Response({"success": False, "message": "Ya tienes una reserva realizada."})
+            Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
+            if Reservas_usuario:
+                 return Response({"success": False, "message": "Ya tienes una reserva realizada."})
             
             # Validar Horario
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Gym, User, Reserva, Penalizacion, Asistencia, HorarioDia
+from .models import Gym, User, Reserva, Penalizacion, Asistencia, HorarioDia, Membresia
 
 @admin.register(Gym)
 class GymAdmin(admin.ModelAdmin):
@@ -32,3 +32,9 @@ class AsistenciaAdmin(admin.ModelAdmin):
 class HorarioDiaAdmin(admin.ModelAdmin):
     list_display = ('dia', 'openTime', 'closeTime')
     search_fields = ('dia',)
+
+@admin.register(Membresia)
+class MembresiaAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'fecha_inicio', 'fecha_fin', 'id_membresia')
+    search_fields = ('usuario__codigo_estudiantil', 'id_membresia')
+

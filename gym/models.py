@@ -27,8 +27,8 @@ class User(models.Model):
     uid = models.CharField(max_length=255, unique=True, primary_key=True)
     nombre = models.CharField(max_length=255)
     programa = models.CharField(max_length=255)
-    codigo_estudiantil = models.IntegerField(default=0)
-    email = models.EmailField(max_length=255)
+    codigo_estudiantil = models.PositiveIntegerField(default=0, unique=True)
+    email = models.EmailField(max_length=255, unique=True)
     
     def __str__(self):
         return self.nombre
@@ -38,7 +38,7 @@ class Reserva(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
     fecha = models.DateField()
     hora = models.TimeField()
-    cantidad_horas = models.IntegerField(default=1)
+    cantidad_horas = models.PositiveIntegerField(default=1)
     hora_fin = models.TimeField(blank=True, null=True)  # Nuevo campo
 
     def save(self, *args, **kwargs):
@@ -67,7 +67,18 @@ class Asistencia(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
     fecha = models.DateField()
     hora = models.TimeField()
-    cantidad_horas = models.IntegerField(default=1)
+    cantidad_horas = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f'{self.usuario.nombre} - {self.cantidad_horas} hora(s) el {self.fecha} a las {self.hora}'
+    
+class Membresia(models.Model):
+    id_membresia = models.AutoField(primary_key=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+
+    def __str__(self):
+        return f'{self.usuario.nombre} - {self.fecha_inicio} a {self.fecha_fin}'
+    
+

@@ -246,13 +246,15 @@ class AsistenciasPorUsuarioView(APIView):
             reservas_usuario = Reserva.objects.filter(usuario=usuario)
             reservas_serializer = ReservaSerializer(reservas_usuario, many=True)
 
-            return JsonResponse({'success': True, 'asistencias': asistencias_serializer, 'reservas': reservas_serializer})
+            # Usar .data para obtener los datos serializados
+            return JsonResponse({'success': True, 'asistencias': asistencias_serializer.data, 'reservas': reservas_serializer.data}) #faltaba .data
         
         except User.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'El usuario no existe.'}, status=400)
         
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
         
 class GetReservasView(APIView):
     def get(self, request, *args, **kwargs):

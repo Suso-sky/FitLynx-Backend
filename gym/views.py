@@ -247,7 +247,7 @@ class AsistenciasPorUsuarioView(APIView):
             reservas_serializer = ReservaSerializer(reservas_usuario, many=True)
 
             # Usar .data para obtener los datos serializados
-            return JsonResponse({'success': True, 'asistencias': asistencias_serializer.data, 'reservas': reservas_serializer.data}) #faltaba .data
+            return JsonResponse({'success': True, 'asistencias': asistencias_serializer.data, 'reservas': reservas_serializer.data}) 
         
         except User.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'El usuario no existe.'}, status=400)
@@ -287,8 +287,7 @@ class PenalizarView(APIView):
             fecha_inicio = datetime.strptime(request.data.get('fecha'), '%Y-%m-%d')
             fecha_fin = fecha_inicio + timedelta(days=7)
             reserva = Reserva.objects.get(id_reserva=reserva_id)
-            reserva_uid = reserva.usuario.uid
-            usuario = User.objects.get(uid = reserva_uid)
+            usuario = reserva.usuario
 
             penalizacion = Penalizacion.objects.create(
                     usuario=usuario,
@@ -326,7 +325,7 @@ class ActualizarHorarioView(APIView):
 
         return Response({'success': True, 'message': 'Horario actualizado correctamente.'})
 
-class CrearAsistencia(APIView):
+class CrearAsistenciaView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             id_reserva = request.data.get('id_reserva')
@@ -345,10 +344,50 @@ class CrearAsistencia(APIView):
             # Eliminar la reserva
             reserva.delete()
 
-            return Response({"success": True, "message": "Asistencia creada y reserva eliminada correctamente."})
+            return Response({"success": True, "message": "Asistencia creada."})
         
         except Reserva.DoesNotExist:
             return Response({"success": False, "message": "La reserva no existe."}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CreateMembresiaView(APIView):
+    def post(self, request, *args, **kwargs):
+        
+        # Obtener datos de la solicitud POST
+        data = json.loads(request.body)
+        codigo_estudiantil = data.get('cod_estudiante')
+        fecha_inicio = data.get('fecha_inicio')
+        fecha_fin = data.get('fecha_fin')
+
+        try:
+            # Verificar si el usuario existe
+            usuario = User.objects.get(codigo_estudiantil=codigo_estudiantil)
+            Membresia.objects.create(
+            usuario=usuario,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            )
+            return Response({"success": True, "message": "Membresía creada con éxito."}, status=status.HTTP_201_CREATED)
+    
+            
+        except User.DoesNotExist:
+            return Response({"success": False, 'message': f'No existe ningún usuario con el codigo estudiantil {codigo_estudiantil}.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+class CancelReservaView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        id_reserva = data.get('id_reserva')
+        print(id_reserva)
+        try:
+            reserva = Reserva.objects.get(id_reserva=id_reserva)
+            reserva.delete()
+
+            return Response({"success": True, "message": "Reserva cancelada."}, status=status.HTTP_200_OK)
+        
+        except Reserva.DoesNotExist:
+            return Response({"success": False, "message": "La reserva no existe."}, status=status.HTTP_404_NOT_FOUND)
+        
+
+    

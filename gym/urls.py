@@ -9,8 +9,10 @@ from .views import (
     GetReservasView,
     PenalizarView,
     ActualizarHorarioView,
-    CrearAsistencia,
+    CrearAsistenciaView,
     GetHorariosView,
+    CreateMembresiaView,
+    CancelReservaView,
 )
 
 urlpatterns = [
@@ -24,6 +26,8 @@ urlpatterns = [
     path('GetHorarios/', GetHorariosView.as_view(), name='Horarios'),
     path('Penalizar/', PenalizarView.as_view(), name='Penalizar'),
     path('ActualizarHorario/', ActualizarHorarioView.as_view(), name='Actualizar Horario'),
-    path('CrearAsistencia/', CrearAsistencia.as_view(), name='Crear Asistencia'),
+    path('CrearAsistencia/', CrearAsistenciaView.as_view(), name='Crear Asistencia'),
+    path('CreateMembresia/', CreateMembresiaView.as_view(), name='Crear Membresía'),
+    path('CancelReserva/', CancelReservaView.as_view(), name='Cancelar Reserva'),
 ]
 

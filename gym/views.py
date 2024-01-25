@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from .models import User, Reserva, Penalizacion, HorarioDia, Asistencia, Gym, Membresia
-from .serializers import ReservaSerializer, AsistenciaSerializer, HorarioDiaSerializer
+from .serializers import ReservaSerializer, AsistenciaSerializer, HorarioDiaSerializer, UserSerializer
 from django.http import HttpResponse
 from django.views import View
 import pandas as pd
@@ -389,5 +389,17 @@ class CancelReservaView(APIView):
         except Reserva.DoesNotExist:
             return Response({"success": False, "message": "La reserva no existe."}, status=status.HTTP_404_NOT_FOUND)
         
+class GetUsersView(APIView):
+    def get(self, request, *args, **kwargs):
+        codigo_estudiantil = request.query_params.get('cod_estudiante', None)
+        try:
+            if codigo_estudiantil:
+                users = User.objects.filter(codigo_estudiantil=codigo_estudiantil)
+            else:
+                users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
 
-    
+            return Response({'success': True, 'usuarios': serializer.data})
+        
+        except Exception as e:
+            return Response({'success': False, 'message': str(e)}, status=500)

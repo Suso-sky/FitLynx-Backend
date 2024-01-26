@@ -14,6 +14,7 @@ from .views import (
     CreateMembresiaView,
     CancelReservaView,
     GetMembresiasView,
+    GetUsersView,
 )
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path('CrearAsistencia/', CrearAsistenciaView.as_view(), name='Crear Asistencia'),
     path('CreateMembresia/', CreateMembresiaView.as_view(), name='Crear Membresía'),
     path('CancelReserva/', CancelReservaView.as_view(), name='Cancelar Reserva'),
-    path('GetMembresias/', GetMembresiasView.as_view(), name='Membresias')
+    path('GetMembresias/', GetMembresiasView.as_view(), name='Membresias'),
+    path('GetUsers/', GetUsersView.as_view(), name='Usuarios'),
 ]
 

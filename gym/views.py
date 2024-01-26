@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from .models import User, Reserva, Penalizacion, HorarioDia, Asistencia, Gym, Membresia
-from .serializers import ReservaSerializer, AsistenciaSerializer, HorarioDiaSerializer
+from .serializers import ReservaSerializer, AsistenciaSerializer, HorarioDiaSerializer, MembresiaSerializer
 from django.http import HttpResponse
 from django.views import View
 import pandas as pd
@@ -59,7 +59,7 @@ class CreateUserView(APIView):
          # Validar correo
 
         if email.find("@unillanos.edu.co") <= 0:
-            return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."})
+            return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."}, status=status.HTTP_401_UNAUTHORIZED)
         
         try:
         # Verificar si el usuario ya existe
@@ -137,7 +137,7 @@ class CreateReservaView(APIView):
             try:
                 penalizacion_usuario = Penalizacion.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
                 fecha_fin_str = penalizacion_usuario.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
-                return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."})
+                return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."}, status=status.HTTP_401_UNAUTHORIZED)
             
             except Penalizacion.DoesNotExist:
                 
@@ -157,7 +157,7 @@ class CreateReservaView(APIView):
                 is_edu_fis = str(usuario.codigo_estudiantil).startswith('14810')
 
                 if (is_edu_fis and asistencias_usuario.count() >= 4) or (not is_edu_fis and asistencias_usuario.count() >= 2):
-                    return Response({"success": False, "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."})
+                    return Response({"success": False, "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."}, status=status.HTTP_401_UNAUTHORIZED)
         
             
             # Validar el aforo
@@ -177,13 +177,13 @@ class CreateReservaView(APIView):
             )
             
             if reservas_superpuestas.count() >= aforo_max:
-                return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."})
+                return Response({"success": False, "message": "Aforo completo para este intervalo de tiempo."}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Validar si tiene alguna reserva activa    
             
             Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
             if Reservas_usuario:
-                 return Response({"success": False, "message": "Ya tienes una reserva realizada."})
+                 return Response({"success": False, "message": "Ya tienes una reserva realizada."}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validar Horario
 
@@ -204,14 +204,14 @@ class CreateReservaView(APIView):
 
               # Verificar si el dia está cerrado
             if  horario_dia.closed:
-                 return Response({'success': False, 'message': f'El día {days[fecha_reserva_day]} está cerrado el gimnasio.'}, status=status.HTTP_400_BAD_REQUEST)
+                 return Response({'success': False, 'message': f'El día {days[fecha_reserva_day]} está cerrado el gimnasio.'}, status=status.HTTP_401_UNAUTHORIZED)
             
             open_datetime = datetime.combine(fecha_reserva, horario_dia.openTime)
             close_datetime = datetime.combine(fecha_reserva, horario_dia.closeTime)
 
                # Verificar Rango de asistencia 
             if not (open_datetime <= datetime.combine(fecha_reserva, hora) <= close_datetime and datetime.combine(fecha_reserva, hora) + timedelta(hours=cantidad_horas) <= close_datetime):
-                return Response({"success": False, "message": "El horario no está dentro del rango permitido."}, status=400)
+                return Response({"success": False, "message": "El horario no está dentro del rango permitido."}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Crear la reserva
             reserva = Reserva.objects.create(
@@ -221,13 +221,13 @@ class CreateReservaView(APIView):
                 cantidad_horas=cantidad_horas
             )
 
-            return Response({"success": True, "message": "Reserva creada con éxito."}) 
+            return Response({"success": True, "message": "Reserva creada con éxito."}, status=status.HTTP_201_CREATED) 
         
         except User.DoesNotExist:
-            return Response({"success": False, "message": "El usuario no existe."}, status=400)
+            return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
-            return Response({"success": False, "message": str(e)}, status=500)
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
        
 class AsistenciasPorUsuarioView(APIView):
     def get(self, request, *args, **kwargs):
@@ -250,10 +250,10 @@ class AsistenciasPorUsuarioView(APIView):
             return JsonResponse({'success': True, 'asistencias': asistencias_serializer.data, 'reservas': reservas_serializer.data}) 
         
         except User.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'El usuario no existe.'}, status=400)
+            return JsonResponse({'success': False, 'message': 'El usuario no existe.'}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+            return JsonResponse({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         
 class GetReservasView(APIView):
@@ -263,10 +263,10 @@ class GetReservasView(APIView):
             reservas = Reserva.objects.all()
             serializer = ReservaSerializer(reservas, many=True)
 
-            return Response({'success': True, 'reservas': serializer.data})
+            return Response({'success': True, 'reservas': serializer.data}, status=status.HTTP_200_OK)
         
         except Exception as e:
-            return Response({'success': False, 'message': str(e)}, status=500)
+            return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GetHorariosView(APIView):
     def get(self, request, *args, **kwargs):
@@ -275,10 +275,10 @@ class GetHorariosView(APIView):
             horarios = HorarioDia.objects.all()
             serializer = HorarioDiaSerializer(horarios, many=True)
 
-            return Response({'success': True, 'horarios': serializer.data})
+            return Response({'success': True, 'horarios': serializer.data}, status=status.HTTP_200_OK)
         
         except Exception as e:
-            return Response({'success': False, 'message': str(e)}, status=500)
+            return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PenalizarView(APIView):
     def post(self, request, *args, **kwargs):
@@ -297,12 +297,12 @@ class PenalizarView(APIView):
             
             reserva.delete()
 
-            return Response({'success': True, 'message': 'Reserva penalizada y eliminada'})
+            return Response({'success': True, 'message': 'Reserva penalizada y eliminada'}, status=status.HTTP_200_OK)
         
         except Reserva.DoesNotExist:
-            return Response({'success': False, 'message': 'Reserva no encontrada'}, status=404)
+            return Response({'success': False, 'message': 'Reserva no encontrada'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({'success': False, 'message': str(e)}, status=500)
+            return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ActualizarHorarioView(APIView):
     def post(self, request, *args, **kwargs):
@@ -323,7 +323,7 @@ class ActualizarHorarioView(APIView):
             except HorarioDia.DoesNotExist:
                 return Response({'success': False, 'message': f'El día {day} no es válido.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'success': True, 'message': 'Horario actualizado correctamente.'})
+        return Response({'success': True, 'message': 'Horario actualizado correctamente.'}, status=status.HTTP_200_OK)
 
 class CrearAsistenciaView(APIView):
     def post(self, request, *args, **kwargs):
@@ -344,7 +344,7 @@ class CrearAsistenciaView(APIView):
             # Eliminar la reserva
             reserva.delete()
 
-            return Response({"success": True, "message": "Asistencia creada."})
+            return Response({"success": True, "message": "Asistencia creada."}, status=status.HTTP_201_CREATED)
         
         except Reserva.DoesNotExist:
             return Response({"success": False, "message": "La reserva no existe."}, status=status.HTTP_404_NOT_FOUND)
@@ -360,17 +360,24 @@ class CreateMembresiaView(APIView):
         codigo_estudiantil = data.get('cod_estudiante')
         fecha_inicio = data.get('fecha_inicio')
         fecha_fin = data.get('fecha_fin')
-
+        fecha_actual = data.get('fecha_actual')
+        
         try:
             # Verificar si el usuario existe
             usuario = User.objects.get(codigo_estudiantil=codigo_estudiantil)
-            Membresia.objects.create(
-            usuario=usuario,
-            fecha_inicio=fecha_inicio,
-            fecha_fin=fecha_fin,
-            )
-            return Response({"success": True, "message": "Membresía creada con éxito."}, status=status.HTTP_201_CREATED)
-    
+            try:
+                # Verificar si el usuario tiene una membresía activa
+                Membresia.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
+                return Response({"success": False, "message": f"el usuario con el codigo {codigo_estudiantil} ya tiene una membresía activa."}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            except Membresia.DoesNotExist:
+
+                Membresia.objects.create(
+                usuario=usuario,
+                fecha_inicio=fecha_inicio,
+                fecha_fin=fecha_fin,
+                )
+                return Response({"success": True, "message": "Membresía creada con éxito."}, status=status.HTTP_201_CREATED)
             
         except User.DoesNotExist:
             return Response({"success": False, 'message': f'No existe ningún usuario con el codigo estudiantil {codigo_estudiantil}.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -391,3 +398,14 @@ class CancelReservaView(APIView):
         
 
     
+class GetMembresiasView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Obtener todas las reservas
+            membresias = Membresia.objects.all()
+            serializer = MembresiaSerializer(membresias, many=True)
+
+            return Response({'success': True, 'reservas': serializer.data}, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -13,6 +13,7 @@ from .views import (
     GetHorariosView,
     CreateMembresiaView,
     CancelReservaView,
+    GetMembresiasView,
 )
 
 urlpatterns = [
@@ -29,5 +30,6 @@ urlpatterns = [
     path('CrearAsistencia/', CrearAsistenciaView.as_view(), name='Crear Asistencia'),
     path('CreateMembresia/', CreateMembresiaView.as_view(), name='Crear Membresía'),
     path('CancelReserva/', CancelReservaView.as_view(), name='Cancelar Reserva'),
+    path('GetMembresias/', GetMembresiasView.as_view(), name='Membresias')
 ]
 

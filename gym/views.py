@@ -396,12 +396,21 @@ class CancelReservaView(APIView):
         except Reserva.DoesNotExist:
             return Response({"success": False, "message": "La reserva no existe."}, status=status.HTTP_404_NOT_FOUND)
         
+""" class GetUsersView(APIView):
+    def get(self, request, *args, **kwargs):
+        codigo_estudiantil = request.query_params.get('cod_estudiante', None)
+        try:
+            if codigo_estudiantil:
+                users = User.objects.filter(codigo_estudiantil=codigo_estudiantil)
+            else:
+                users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
 
-    
+ """    
 class GetMembresiasView(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            # Obtener todas las reservas
+            # Obtener todas las Membresias
             membresias = Membresia.objects.all()
             serializer = MembresiaSerializer(membresias, many=True)
 

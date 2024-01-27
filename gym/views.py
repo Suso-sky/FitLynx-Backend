@@ -367,7 +367,12 @@ class CreateMembresiaView(APIView):
             usuario = User.objects.get(codigo_estudiantil=codigo_estudiantil)
             try:
                 # Verificar si el usuario tiene una membresía activa
-                Membresia.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
+                Membresia.objects.get(
+                    usuario=usuario, 
+                    fecha_fin__gte=fecha_inicio,
+                    fecha_inicio__lte=fecha_fin
+                    )
+                
                 return Response({"success": False, "message": f"el usuario con el codigo {codigo_estudiantil} ya tiene una membresía activa."}, status=status.HTTP_401_UNAUTHORIZED)
             
             except Membresia.DoesNotExist:

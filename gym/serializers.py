@@ -33,8 +33,9 @@ class HorarioDiaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MembresiaSerializer(serializers.ModelSerializer):
+    usuario = UserSerializer() 
     class Meta:
         model = Membresia
-        fields = '__all__'
+        fields = ['id_membresia', 'fecha_inicio', 'fecha_fin', 'usuario']
 
 

@@ -224,7 +224,7 @@ class CreateReservaView(APIView):
             return Response({"success": True, "message": "Reserva creada con éxito."}, status=status.HTTP_201_CREATED) 
         
         except User.DoesNotExist:
-            return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "Debes llenar el formulario de registro primero."}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -424,7 +424,7 @@ class GetMembresiasView(APIView):
             membresias = Membresia.objects.all()
             serializer = MembresiaSerializer(membresias, many=True)
 
-            return Response({'success': True, 'reservas': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'membresias': serializer.data}, status=status.HTTP_200_OK)
         
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

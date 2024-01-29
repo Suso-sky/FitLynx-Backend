@@ -13,6 +13,7 @@ from django.http import JsonResponse
 import json
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta, MO
+from django.utils import timezone
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -351,6 +352,34 @@ class CrearAsistenciaView(APIView):
         
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CreateAsistenciaSinReservaView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Obtener los datos enviados desde el frontend
+            user_data = request.data.get('usuario')
+            hora = request.data.get('hora')
+            cantidad_horas = request.data.get('cantidad_horas')
+            fecha = timezone.now().date()  # Utiliza la fecha actual
+
+            try:
+                usuario = User.objects.get(uid=user_data['uid'])
+            except User.DoesNotExist:
+            # Manejar el caso en el que el usuario no existe
+                return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
+            # Crear la asistencia
+            asistencia = Asistencia.objects.create(
+                usuario=usuario,
+                fecha=fecha,
+                hora=hora,
+                cantidad_horas=cantidad_horas
+            )
+
+            return Response({"success": True, "message": "Asistencia creada sin reserva."}, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         
 class CreateMembresiaView(APIView):
     def post(self, request, *args, **kwargs):

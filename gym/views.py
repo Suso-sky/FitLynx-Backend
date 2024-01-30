@@ -39,12 +39,16 @@ class CheckUserView(APIView):
         
         data = json.loads(request.body)
         uid = data.get('uid')
+        email = data.get('email')
+
+        if email.find("@unillanos.edu.co") <= 0:
+            return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional. (Prueba con tu correo de extensión '@unillanos')"}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Realiza la consulta para verificar la existencia del usuario
         user_exists = User.objects.filter(uid=uid).exists()
 
         # Puedes devolver una respuesta JSON indicando si el usuario existe o no
-        return Response({"user_exists": user_exists})
+        return Response({"user_exists": user_exists, "message": "El usuario existe"})
 
 class CreateUserView(APIView):
     def post(self, request, *args, **kwargs):
@@ -59,8 +63,8 @@ class CreateUserView(APIView):
 
          # Validar correo
 
-        if email.find("@unillanos.edu.co") <= 0:
-            return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."}, status=status.HTTP_401_UNAUTHORIZED)
+        #if email.find("@unillanos.edu.co") <= 0:
+        #   return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."}, status=status.HTTP_401_UNAUTHORIZED)
         
         try:
         # Verificar si el usuario ya existe

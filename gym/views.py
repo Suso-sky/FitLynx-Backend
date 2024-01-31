@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -15,6 +16,13 @@ from django.db.models import Q
 from dateutil.relativedelta import relativedelta, MO
 from django.utils import timezone
 
+# COSAS AGREGADA POR JESUS (QUITAR EN CASO DE NO UTILIZAR EL SENDER DE CORREO)
+from django.core.mail import send_mail
+import threading
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+#
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get("username")
@@ -36,19 +44,49 @@ class LoginView(APIView):
         
 class CheckUserView(APIView):
     def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            uid = data.get('uid')
+            email = data.get('email')
+
+            if email.find("@unillanos.edu.co") <= 0:
+                return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional. (Prueba con tu correo de extensión '@unillanos')"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            user_exists = User.objects.filter(uid=uid).exists()
+
+            return Response({"user_exists": user_exists, "message": "El usuario existe"})
+
+        except Exception as e:
+            # Captura cualquier excepción y envíala al frontend
+            return JsonResponse({'error': 'Se produjo un error en el servidor: ' + str(e)}, status=500)
+    
+
+# HILO PARA MANEJAR EL ENVIO DEL CORREO DE FORMA ASINCRONA
+# Clase para manejar el envío de correos electrónicos en un hilo separado
+class EmailThread(threading.Thread):
+    def __init__(self, subject, html_content, text_content, recipient_list):
+        self.subject = subject
+        self.html_content = html_content
+        self.text_content = text_content
+        self.recipient_list = recipient_list
+        threading.Thread.__init__(self)
+
+    def run(self):
+        # Crear el correo electrónico con texto e HTML
+        email = EmailMultiAlternatives(
+            subject=self.subject,
+            body=self.text_content,
+            from_email='Fitlynx <fitlynx@outlook.com>',
+            to=self.recipient_list
+        )
+        email.attach_alternative(self.html_content, "text/html")
         
-        data = json.loads(request.body)
-        uid = data.get('uid')
-        email = data.get('email')
+        # Si tienes una imagen para adjuntar, usa la ruta completa al archivo de la imagen
+        # email.attach_file('/path/to/image.jpg')
 
-        if email.find("@unillanos.edu.co") <= 0:
-            return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional. (Prueba con tu correo de extensión '@unillanos')"}, status=status.HTTP_401_UNAUTHORIZED)
+        # Enviar el correo electrónico
+        email.send()
 
-        # Realiza la consulta para verificar la existencia del usuario
-        user_exists = User.objects.filter(uid=uid).exists()
-
-        # Puedes devolver una respuesta JSON indicando si el usuario existe o no
-        return Response({"user_exists": user_exists, "message": "El usuario existe"})
 
 class CreateUserView(APIView):
     def post(self, request, *args, **kwargs):
@@ -61,7 +99,7 @@ class CreateUserView(APIView):
         codigo_estudiantil = data.get('codigo')
         email = data.get('email')
 
-         # Validar correo
+         # Validar correo (ya se esta haciendo tan pronto carga la sesión, se puede dejar aqui si se ve necesario)
 
         #if email.find("@unillanos.edu.co") <= 0:
         #   return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -79,6 +117,20 @@ class CreateUserView(APIView):
                 codigo_estudiantil=codigo_estudiantil,
                 email=email
             )
+            
+            # Enviar correo de bienvenida en un hilo separado
+            # Preparar el contenido del correo electrónico HTML y texto
+            html_content = render_to_string('D:/FitLynx-Backend/email_welcome.html', {'nombre': nombre})  # Asumiendo que tienes una plantilla HTML
+            text_content = strip_tags(html_content)  # Convertir la plantilla HTML en texto plano
+
+            # Enviar correo de bienvenida en un hilo separado
+            EmailThread(
+                'Cuenta Creada Exitosamente!',
+                html_content,
+                text_content,
+                [email]
+            ).start()
+            
             return Response({"success": True, "message": "Usuario creado con éxito."}, status=status.HTTP_201_CREATED)
         
 class ReporteView(View):

@@ -22,6 +22,7 @@ import threading
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.db.models import Sum
 #
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -186,7 +187,7 @@ class CreateReservaView(APIView):
             fecha_reserva = datetime.strptime(request.data.get('fecha_reserva'), '%Y-%m-%d')  
             fecha_actual = datetime.strptime(request.data.get('fecha_actual'), '%Y-%m-%d') 
             hora = datetime.strptime(data.get('hora'), '%H:%M').time()  
-            cantidad_horas = data.get('cantHoras')
+            cantidad_horas = int(data.get('cantHoras'))
             usuario = User.objects.get(uid=uid)
 
             
@@ -210,12 +211,19 @@ class CreateReservaView(APIView):
                 
                 print(f"{usuario.nombre} no tiene membresías activas")                
                 ultimo_lunes = fecha_actual + relativedelta(weekday=MO(-1))
-                asistencias_usuario = Asistencia.objects.filter(usuario=usuario, fecha__gte=ultimo_lunes)
+                # Cuenta el numero total de horas asistidas desde el ultimo lunes
+                total_horas_asistencia = Asistencia.objects.filter(
+                    usuario=usuario, 
+                    fecha__gte=ultimo_lunes
+                ).aggregate(total_horas=Sum('cantidad_horas'))['total_horas'] or 0
+                # Verifica si el usuario es de educación física
                 is_edu_fis = str(usuario.codigo_estudiantil).startswith('14810')
 
-                if (is_edu_fis and asistencias_usuario.count() >= 4) or (not is_edu_fis and asistencias_usuario.count() >= 2):
-                    return Response({"success": False, "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."}, status=status.HTTP_401_UNAUTHORIZED)
-        
+                if (is_edu_fis and total_horas_asistencia >= 4) or (not is_edu_fis and total_horas_asistencia >= 2):
+                    return Response({
+                        "success": False, 
+                        "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."
+                    }, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validar el aforo
                 

@@ -4,7 +4,7 @@ from .models import User, Reserva, Penalizacion, Asistencia, HorarioDia, Membres
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('uid', 'nombre', 'programa', 'codigo_estudiantil', 'email')
+        fields = ('uid', 'nombre', 'programa', 'codigo_estudiantil', 'email', 'telefono', 'codigo_estudiantil_editado', 'programa_editado', 'telefono_editado')
 
 class ReservaSerializer(serializers.ModelSerializer):
     

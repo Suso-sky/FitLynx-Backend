@@ -15,15 +15,9 @@ import json
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta, MO
 from django.utils import timezone
-
-# COSAS AGREGADA POR JESUS (QUITAR EN CASO DE NO UTILIZAR EL SENDER DE CORREO)
-from django.core.mail import send_mail
-import threading
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from rest_framework import viewsets
 from django.db.models import Sum
-#
+
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get("username")
@@ -60,35 +54,6 @@ class CheckUserView(APIView):
         except Exception as e:
             # Captura cualquier excepción y envíala al frontend
             return JsonResponse({'error': 'Se produjo un error en el servidor: ' + str(e)}, status=500)
-    
-
-# HILO PARA MANEJAR EL ENVIO DEL CORREO DE FORMA ASINCRONA
-# Clase para manejar el envío de correos electrónicos en un hilo separado
-class EmailThread(threading.Thread):
-    def __init__(self, subject, html_content, text_content, recipient_list):
-        self.subject = subject
-        self.html_content = html_content
-        self.text_content = text_content
-        self.recipient_list = recipient_list
-        threading.Thread.__init__(self)
-
-    def run(self):
-        # Crear el correo electrónico con texto e HTML
-        email = EmailMultiAlternatives(
-            subject=self.subject,
-            body=self.text_content,
-            from_email='Fitlynx <fitlynx@outlook.com>',
-            to=self.recipient_list
-        )
-        email.attach_alternative(self.html_content, "text/html")
-        
-        # Si tienes una imagen para adjuntar, usa la ruta completa al archivo de la imagen
-        # email.attach_file('/path/to/image.jpg')
-
-        # Enviar el correo electrónico
-        email.send()
-
-
 class CreateUserView(APIView):
     def post(self, request, *args, **kwargs):
         
@@ -100,7 +65,7 @@ class CreateUserView(APIView):
         codigo_estudiantil = data.get('codigo')
         email = data.get('email')
 
-         # Validar correo (ya se esta haciendo tan pronto carga la sesión, se puede dejar aqui si se ve necesario)
+        # Validar correo (ya se esta haciendo tan pronto carga la sesión, se puede dejar aqui si se ve necesario)
 
         #if email.find("@unillanos.edu.co") <= 0:
         #   return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -118,19 +83,6 @@ class CreateUserView(APIView):
                 codigo_estudiantil=codigo_estudiantil,
                 email=email
             )
-            
-            # Enviar correo de bienvenida en un hilo separado
-            # Preparar el contenido del correo electrónico HTML y texto
-            html_content = render_to_string('D:/FitLynx-Backend/email_welcome.html', {'nombre': nombre})  # Asumiendo que tienes una plantilla HTML
-            text_content = strip_tags(html_content)  # Convertir la plantilla HTML en texto plano
-
-            # Enviar correo de bienvenida en un hilo separado
-            EmailThread(
-                'Cuenta Creada Exitosamente!',
-                html_content,
-                text_content,
-                [email]
-            ).start()
             
             return Response({"success": True, "message": "Usuario creado con éxito."}, status=status.HTTP_201_CREATED)
         
@@ -521,3 +473,44 @@ class GetMembresiasView(APIView):
         
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CancelMembresiaView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        id_membresia = data.get('id_membresia')
+        print(id_membresia)
+        try:
+            membresia = Membresia.objects.get(id_membresia=id_membresia)
+            membresia.delete()
+
+            return Response({"success": True, "message": "Membresia cancelada."}, status=status.HTTP_200_OK)
+        
+        except Membresia.DoesNotExist:
+            return Response({"success": False, "message": "La Membresia no existe."}, status=status.HTTP_404_NOT_FOUND)
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        # Realiza la actualización
+        self.perform_update(serializer)
+  
+        if 'codigo_estudiantil' in request.data:
+            instance.codigo_estudiantil_editado = True
+            instance.save(update_fields=['codigo_estudiantil_editado'])
+        
+        if 'programa' in request.data:
+             instance.programa_editado = True
+             instance.save(update_fields=['programa_editado'])
+
+        if 'telefono' in request.data:
+            instance.telefono_editado = True
+            instance.save(update_fields=['telefono_editado'])
+        
+        return Response(serializer.data)

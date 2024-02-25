@@ -1,5 +1,7 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
+    CancelMembresiaView,
     CreateAsistenciaSinReservaView,
     LoginView,
     CheckUserView,
@@ -16,9 +18,14 @@ from .views import (
     CancelReservaView,
     GetMembresiasView,
     GetUsersView,
+    UserViewSet
 )
 
+router = DefaultRouter()
+router.register(r'users', UserViewSet)
+
 urlpatterns = [
+    path('', include(router.urls)),
     path('login/', LoginView.as_view(), name='login'),
     path('CheckUser/', CheckUserView.as_view(), name='Check User'),
     path('CreateUser/', CreateUserView.as_view(), name='Create User'),
@@ -34,6 +41,7 @@ urlpatterns = [
     path('CreateMembresia/', CreateMembresiaView.as_view(), name='Crear Membresía'),
     path('CancelReserva/', CancelReservaView.as_view(), name='Cancelar Reserva'),
     path('GetMembresias/', GetMembresiasView.as_view(), name='Membresias'),
+    path('CancelMembresia/', CancelMembresiaView.as_view(), name='Cancelar Membresia'),
     path('GetUsers/', GetUsersView.as_view(), name='Usuarios'),
 ]
 

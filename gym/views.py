@@ -146,7 +146,9 @@ class CreateReservaView(APIView):
             # Validar penalización
             try:
                 penalizacion_usuario = Penalizacion.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
-                fecha_fin_str = penalizacion_usuario.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
+                fecha_fin_mas_un_dia = penalizacion_usuario.fecha_fin + timedelta(days=1)
+                fecha_fin_str = fecha_fin_mas_un_dia.strftime('%Y-%m-%d')
+                # fecha_fin_str = penalizacion_usuario.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
                 return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."}, status=status.HTTP_401_UNAUTHORIZED)
             
             except Penalizacion.DoesNotExist:
@@ -198,9 +200,9 @@ class CreateReservaView(APIView):
 
             # Validar si tiene alguna reserva activa    
             
-            Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
-            if Reservas_usuario:
-                 return Response({"success": False, "message": "Ya tienes una reserva realizada."}, status=status.HTTP_401_UNAUTHORIZED)
+           # Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
+           # if Reservas_usuario:
+           #      return Response({"success": False, "message": "Ya tienes una reserva realizada."}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validar Horario
 

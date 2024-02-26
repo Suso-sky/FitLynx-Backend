@@ -200,9 +200,9 @@ class CreateReservaView(APIView):
 
             # Validar si tiene alguna reserva activa    
             
-           # Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
-           # if Reservas_usuario:
-           #      return Response({"success": False, "message": "Ya tienes una reserva realizada."}, status=status.HTTP_401_UNAUTHORIZED)
+            Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
+            if Reservas_usuario:
+                return Response({"success": False, "message": "Ya tienes una reserva realizada."}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validar Horario
 

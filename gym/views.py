@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -13,6 +14,9 @@ from django.http import JsonResponse
 import json
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta, MO
+from django.utils import timezone
+from rest_framework import viewsets
+from django.db.models import Sum
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -35,16 +39,21 @@ class LoginView(APIView):
         
 class CheckUserView(APIView):
     def post(self, request, *args, **kwargs):
-        
-        data = json.loads(request.body)
-        uid = data.get('uid')
+        try:
+            data = json.loads(request.body)
+            uid = data.get('uid')
+            email = data.get('email')
 
-        # Realiza la consulta para verificar la existencia del usuario
-        user_exists = User.objects.filter(uid=uid).exists()
+            if email.find("@unillanos.edu.co") <= 0:
+                return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional. (Prueba con tu correo de extensión '@unillanos')"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Puedes devolver una respuesta JSON indicando si el usuario existe o no
-        return Response({"user_exists": user_exists})
+            user_exists = User.objects.filter(uid=uid).exists()
 
+            return Response({"user_exists": user_exists, "message": "El usuario existe"})
+
+        except Exception as e:
+            # Captura cualquier excepción y envíala al frontend
+            return JsonResponse({'error': 'Se produjo un error en el servidor: ' + str(e)}, status=500)
 class CreateUserView(APIView):
     def post(self, request, *args, **kwargs):
         
@@ -56,10 +65,10 @@ class CreateUserView(APIView):
         codigo_estudiantil = data.get('codigo')
         email = data.get('email')
 
-         # Validar correo
+        # Validar correo (ya se esta haciendo tan pronto carga la sesión, se puede dejar aqui si se ve necesario)
 
-        if email.find("@unillanos.edu.co") <= 0:
-            return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."}, status=status.HTTP_401_UNAUTHORIZED)
+        #if email.find("@unillanos.edu.co") <= 0:
+        #   return Response({"success": False, "message": "Solo puedes usar FitLynx con un correo institucional."}, status=status.HTTP_401_UNAUTHORIZED)
         
         try:
         # Verificar si el usuario ya existe
@@ -74,6 +83,7 @@ class CreateUserView(APIView):
                 codigo_estudiantil=codigo_estudiantil,
                 email=email
             )
+            
             return Response({"success": True, "message": "Usuario creado con éxito."}, status=status.HTTP_201_CREATED)
         
 class ReporteView(View):
@@ -129,14 +139,16 @@ class CreateReservaView(APIView):
             fecha_reserva = datetime.strptime(request.data.get('fecha_reserva'), '%Y-%m-%d')  
             fecha_actual = datetime.strptime(request.data.get('fecha_actual'), '%Y-%m-%d') 
             hora = datetime.strptime(data.get('hora'), '%H:%M').time()  
-            cantidad_horas = data.get('cantHoras')
+            cantidad_horas = int(data.get('cantHoras'))
             usuario = User.objects.get(uid=uid)
 
             
             # Validar penalización
             try:
                 penalizacion_usuario = Penalizacion.objects.get(usuario=usuario, fecha_fin__gte=fecha_actual)
-                fecha_fin_str = penalizacion_usuario.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
+                fecha_fin_mas_un_dia = penalizacion_usuario.fecha_fin + timedelta(days=1)
+                fecha_fin_str = fecha_fin_mas_un_dia.strftime('%Y-%m-%d')
+                # fecha_fin_str = penalizacion_usuario.fecha_fin.strftime('%Y-%m-%d') + timedelta(days=1)
                 return Response({"success": False, "message": f"Estás penalizad@, no puedes reservar, puedes volver a reservar el {fecha_fin_str}."}, status=status.HTTP_401_UNAUTHORIZED)
             
             except Penalizacion.DoesNotExist:
@@ -153,12 +165,19 @@ class CreateReservaView(APIView):
                 
                 print(f"{usuario.nombre} no tiene membresías activas")                
                 ultimo_lunes = fecha_actual + relativedelta(weekday=MO(-1))
-                asistencias_usuario = Asistencia.objects.filter(usuario=usuario, fecha__gte=ultimo_lunes)
+                # Cuenta el numero total de horas asistidas desde el ultimo lunes
+                total_horas_asistencia = Asistencia.objects.filter(
+                    usuario=usuario, 
+                    fecha__gte=ultimo_lunes
+                ).aggregate(total_horas=Sum('cantidad_horas'))['total_horas'] or 0
+                # Verifica si el usuario es de educación física
                 is_edu_fis = str(usuario.codigo_estudiantil).startswith('14810')
 
-                if (is_edu_fis and asistencias_usuario.count() >= 4) or (not is_edu_fis and asistencias_usuario.count() >= 2):
-                    return Response({"success": False, "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."}, status=status.HTTP_401_UNAUTHORIZED)
-        
+                if (is_edu_fis and total_horas_asistencia >= 4) or (not is_edu_fis and total_horas_asistencia >= 2):
+                    return Response({
+                        "success": False, 
+                        "message": "Ya cumpliste tu límite de asistencias gratuitas semanales, puedes volver a reservar hasta la próxima semana o puedes adquirir una membresía en el gym."
+                    }, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validar el aforo
                 
@@ -183,7 +202,7 @@ class CreateReservaView(APIView):
             
             Reservas_usuario = Reserva.objects.filter(usuario=usuario).exists()
             if Reservas_usuario:
-                 return Response({"success": False, "message": "Ya tienes una reserva realizada."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": "Ya tienes una reserva realizada."}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validar Horario
 
@@ -224,7 +243,7 @@ class CreateReservaView(APIView):
             return Response({"success": True, "message": "Reserva creada con éxito."}, status=status.HTTP_201_CREATED) 
         
         except User.DoesNotExist:
-            return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "Debes llenar el formulario de registro primero."}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -352,6 +371,34 @@ class CrearAsistenciaView(APIView):
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+class CreateAsistenciaSinReservaView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            # Obtener los datos enviados desde el frontend
+            user_data = request.data.get('usuario')
+            hora = request.data.get('hora')
+            cantidad_horas = request.data.get('cantidad_horas')
+            fecha = timezone.now().date()  # Utiliza la fecha actual
+
+            try:
+                usuario = User.objects.get(uid=user_data['uid'])
+            except User.DoesNotExist:
+            # Manejar el caso en el que el usuario no existe
+                return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
+            # Crear la asistencia
+            asistencia = Asistencia.objects.create(
+                usuario=usuario,
+                fecha=fecha,
+                hora=hora,
+                cantidad_horas=cantidad_horas
+            )
+
+            return Response({"success": True, "message": "Asistencia creada sin reserva."}, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        
 class CreateMembresiaView(APIView):
     def post(self, request, *args, **kwargs):
         
@@ -424,7 +471,48 @@ class GetMembresiasView(APIView):
             membresias = Membresia.objects.all()
             serializer = MembresiaSerializer(membresias, many=True)
 
-            return Response({'success': True, 'reservas': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'membresias': serializer.data}, status=status.HTTP_200_OK)
         
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CancelMembresiaView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        id_membresia = data.get('id_membresia')
+        print(id_membresia)
+        try:
+            membresia = Membresia.objects.get(id_membresia=id_membresia)
+            membresia.delete()
+
+            return Response({"success": True, "message": "Membresia cancelada."}, status=status.HTTP_200_OK)
+        
+        except Membresia.DoesNotExist:
+            return Response({"success": False, "message": "La Membresia no existe."}, status=status.HTTP_404_NOT_FOUND)
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        # Realiza la actualización
+        self.perform_update(serializer)
+  
+        if 'codigo_estudiantil' in request.data:
+            instance.codigo_estudiantil_editado = True
+            instance.save(update_fields=['codigo_estudiantil_editado'])
+        
+        if 'programa' in request.data:
+             instance.programa_editado = True
+             instance.save(update_fields=['programa_editado'])
+
+        if 'telefono' in request.data:
+            instance.telefono_editado = True
+            instance.save(update_fields=['telefono_editado'])
+        
+        return Response(serializer.data)

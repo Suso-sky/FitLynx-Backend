@@ -29,6 +29,12 @@ class User(models.Model):
     programa = models.CharField(max_length=255)
     codigo_estudiantil = models.PositiveIntegerField(default=0, unique=True)
     email = models.EmailField(max_length=255, unique=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)  # Campo nuevo opcional
+
+    # Campos para rastrear si han sido editados
+    codigo_estudiantil_editado = models.BooleanField(default=False)
+    programa_editado = models.BooleanField(default=False)
+    telefono_editado = models.BooleanField(default=False)
     
     def __str__(self):
         return self.nombre

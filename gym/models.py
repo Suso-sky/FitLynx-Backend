@@ -32,6 +32,13 @@ class User(models.Model):
     
     def __str__(self):
         return self.nombre
+    
+class Admin(models.Model):
+    usuario = models.CharField(max_length=255, unique=True, primary_key=True)
+    contrasena = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return self.nombre
 
 class Reserva(models.Model):
     id_reserva = models.AutoField(primary_key=True)

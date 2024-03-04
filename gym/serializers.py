@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Reserva, Penalizacion, Asistencia, HorarioDia, Membresia
+from .models import User, Admin, Reserva, Penalizacion, Asistencia, HorarioDia, Membresia
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,4 +37,8 @@ class MembresiaSerializer(serializers.ModelSerializer):
         model = Membresia
         fields = '__all__'
 
+class AdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Admin
+        fields = '__all__'
 

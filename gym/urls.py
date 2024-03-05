@@ -1,25 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (
-    CancelMembresiaView,
-    CreateAsistenciaSinReservaView,
-    LoginView,
-    CheckUserView,
-    CreateUserView,
-    ReporteView,
-    CreateReservaView,
-    AsistenciasPorUsuarioView,
-    GetReservasView,
-    PenalizarView,
-    ActualizarHorarioView,
-    CrearAsistenciaView,
-    GetHorariosView,
-    CreateMembresiaView,
-    CancelReservaView,
-    GetMembresiasView,
-    GetUsersView,
-    UserViewSet
-)
+
+from .views.views_asistencias import CrearAsistenciaView, AsistenciasPorUsuarioView, CreateAsistenciaSinReservaView
+from .views.views_auth import LoginView, CheckUserView, CreateUserView
+from .views.views_horarios import GetHorariosView, ActualizarHorarioView
+from .views.views_membresias import CancelMembresiaView, GetMembresiasView, CreateMembresiaView
+from .views.views_penalizaciones import PenalizarView
+from .views.views_reporte import ReporteView
+from .views.views_usuarios import GetUsersView, UserViewSet
+from .views.views_reservas import CreateReservaView, GetReservasView, CancelReservaView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)

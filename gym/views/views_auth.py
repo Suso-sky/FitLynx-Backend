@@ -1,30 +1,30 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from gym.models import User
+from gym.models import User, Admin
 from django.http import JsonResponse
 import json
 
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
+
         username = request.data.get("username")
         password = request.data.get("password")
-
-        fixed_username = "admin"
-        fixed_password = "1234"
-
-        if username == fixed_username and password == fixed_password:
-            
-            user_data = {
-                "username": fixed_username,
-                "password": fixed_password,
-            }
-
-            return Response({"success": True, "message": "Login exitoso.", "data": user_data}, status=status.HTTP_200_OK)
-        else:
-            return Response({"success": False, "message": "Usuario o contraseña incorrectos."}, status=status.HTTP_401_UNAUTHORIZED)
         
+        try:
+            admin = Admin.objects.get(username=username)
+
+            if admin.password == password:
+                return Response({"success": True, "message": "Login exitoso."}, status=status.HTTP_200_OK)
+            
+            else:
+                return Response({"success": False, "message": "Usuario o contraseña incorrectos."}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        except Admin.DoesNotExist:
+            
+            return Response({"success": False, "message": "Usuario o contraseña incorrectos."}, status=status.HTTP_401_UNAUTHORIZED)
+            
 class CheckUserView(APIView):
     def post(self, request, *args, **kwargs):
         try:

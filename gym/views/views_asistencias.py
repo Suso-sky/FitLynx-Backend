@@ -4,7 +4,7 @@ from rest_framework import status
 from gym.models import User, Reserva, Asistencia
 from gym.serializers import ReservaSerializer, AsistenciaSerializer
 from django.http import JsonResponse
-
+from django.utils import timezone
 
 class AsistenciasPorUsuarioView(APIView):
     def get(self, request, *args, **kwargs):

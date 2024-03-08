@@ -35,16 +35,18 @@ class User(models.Model):
     codigo_estudiantil_editado = models.BooleanField(default=False)
     programa_editado = models.BooleanField(default=False)
     telefono_editado = models.BooleanField(default=False)
-    
+
     def __str__(self):
         return self.nombre
     
+
 class Admin(models.Model):
-    usuario = models.CharField(max_length=255, unique=True, primary_key=True)
-    contrasena = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, unique=True, primary_key=True)
+    password = models.CharField(max_length=255)
     
     def __str__(self):
-        return self.nombre
+        return self.name
 
 class Reserva(models.Model):
     id_reserva = models.AutoField(primary_key=True)

@@ -4,6 +4,7 @@ from rest_framework import status
 from gym.models import HorarioDia
 from gym.serializers import HorarioDiaSerializer
 
+
 class GetHorariosView(APIView):
     def get(self, request, *args, **kwargs):
         try:

@@ -4,7 +4,12 @@ from .models import User, Admin, Reserva, Penalizacion, Asistencia, HorarioDia, 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('uid', 'nombre', 'programa', 'codigo_estudiantil', 'email', 'telefono', 'codigo_estudiantil_editado', 'programa_editado', 'telefono_editado')
+        fields = (
+            'uid', 'username', 'password', 'email', 'is_admin', 'programa', 
+            'codigo_estudiantil', 'telefono', 'photo_url', 'codigo_estudiantil_editado', 
+            'programa_editado', 'telefono_editado'
+        )
+        extra_kwargs = {'password': {'write_only': True}}
 
 class ReservaSerializer(serializers.ModelSerializer):
     
@@ -41,5 +46,6 @@ class MembresiaSerializer(serializers.ModelSerializer):
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
-        fields = '__all__'
+        fields = ('username', 'password', 'email', 'is_admin')
+        extra_kwargs = {'password': {'write_only': True}}
 

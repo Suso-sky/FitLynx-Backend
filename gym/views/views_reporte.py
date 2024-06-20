@@ -13,7 +13,7 @@ class ReporteView(View):
 
         # Crear un DataFrame de pandas con los datos de las asistencias
         data = {
-            'Nombre': [asistencia.usuario.nombre for asistencia in asistencias],
+            'Nombre': [asistencia.usuario.username for asistencia in asistencias],
             'Programa': [asistencia.usuario.programa for asistencia in asistencias],
             'Código Estudiantil': [asistencia.usuario.codigo_estudiantil for asistencia in asistencias],
             'Fecha': [asistencia.fecha.strftime('%Y-%m-%d') if isinstance(asistencia.fecha, date) else asistencia.fecha for asistencia in asistencias],

@@ -8,13 +8,13 @@ class GymAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'programa', 'codigo_estudiantil', 'email', 'uid')
-    search_fields = ('nombre', 'codigo_estudiantil', 'uid')
+    list_display = ('username', 'programa', 'codigo_estudiantil', 'email', 'uid', 'photo_url')
+    search_fields = ('username', 'codigo_estudiantil', 'uid', 'photo_url')
 
 @admin.register(Admin)
 class AdminAdmin(admin.ModelAdmin):
-    list_display = ('username', 'name')
-    search_fields = ('username', 'name')
+    list_display = ('username', 'email', 'is_admin')
+    search_fields = ('username', 'email')
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):

@@ -15,7 +15,7 @@ class GetUsersView(APIView):
                 users = User.objects.all()
             serializer = UserSerializer(users, many=True)
 
-            return Response({'success': True, 'usuarios': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'userList': serializer.data}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

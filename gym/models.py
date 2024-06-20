@@ -22,14 +22,26 @@ class HorarioDia(models.Model):
 
     def __str__(self):
         return f'{self.dia} - {"Cerrado" if self.closed else f"{self.openTime} a {self.closeTime}"}'
-    
-class User(models.Model):
+
+class Person(models.Model):
+    username = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255, unique=True)
+    is_admin = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True  # Define esta clase como abstracta
+
+    def __str__(self):
+        return self.username
+
+
+class User(Person):
     uid = models.CharField(max_length=255, unique=True, primary_key=True)
-    nombre = models.CharField(max_length=255)
     programa = models.CharField(max_length=255)
     codigo_estudiantil = models.PositiveIntegerField(default=0, unique=True)
-    email = models.EmailField(max_length=255, unique=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)  # Campo nuevo opcional
+    photo_url = models.URLField(max_length=500, null=True, blank=True)
 
     # Campos para rastrear si han sido editados
     codigo_estudiantil_editado = models.BooleanField(default=False)
@@ -37,16 +49,13 @@ class User(models.Model):
     telefono_editado = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.nombre
+        return self.username
     
 
-class Admin(models.Model):
-    name = models.CharField(max_length=255)
-    username = models.CharField(max_length=255, unique=True, primary_key=True)
-    password = models.CharField(max_length=255)
+class Admin(Person):
     
     def __str__(self):
-        return self.name
+        return self.username
 
 class Reserva(models.Model):
     id_reserva = models.AutoField(primary_key=True)

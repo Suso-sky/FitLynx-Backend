@@ -32,17 +32,17 @@ class CreateReservaView(APIView):
             
             except Penalizacion.DoesNotExist:
                 
-                print(f"{usuario.nombre} no tiene penalizaciones activas")
+                print(f"{usuario.username} no tiene penalizaciones activas")
                     
             
             # Validar Programa y Membresía
             try:
                 membresia_usuario = Membresia.objects.get(usuario=usuario, fecha_fin__gte = fecha_actual)
-                print(f"{usuario.nombre} tiene una membresía activa hasta el {membresia_usuario.fecha_fin}")                
+                print(f"{usuario.username} tiene una membresía activa hasta el {membresia_usuario.fecha_fin}")                
                 
             except Membresia.DoesNotExist:
                 
-                print(f"{usuario.nombre} no tiene membresías activas")                
+                print(f"{usuario.username} no tiene membresías activas")                
                 ultimo_lunes = fecha_actual + relativedelta(weekday=MO(-1))
                 # Cuenta el numero total de horas asistidas desde el ultimo lunes
                 total_horas_asistencia = Asistencia.objects.filter(
@@ -98,7 +98,7 @@ class CreateReservaView(APIView):
             try:
                 horario_dia = HorarioDia.objects.get(dia=days[fecha_reserva_day])
             except HorarioDia.DoesNotExist:
-                return Response({'success': False, 'message': f'El día {fecha_reserva_day} no tiene un horario definido.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'success': False, 'message': f'El día {days[fecha_reserva_day]} no tiene un horario definido.'}, status=status.HTTP_400_BAD_REQUEST)
 
               # Verificar si el dia está cerrado
             if  horario_dia.closed:

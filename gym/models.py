@@ -3,25 +3,26 @@ from datetime import datetime, timedelta, date
 
 class Gym(models.Model):
     gym_id = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=255)
-    aforo_max = models.PositiveIntegerField(default=0)
+    name = models.CharField(max_length=255)
+    max_capacity = models.PositiveIntegerField(default=0)
 
-class HorarioDia(models.Model):
-    DIA_CHOICES = [ ('Lunes', 'Lunes'),
-                    ('Martes', 'Martes'),
-                    ('Miércoles', 'Miércoles'),  
-                    ('Jueves', 'Jueves'), 
-                    ('Viernes', 'Viernes'),
-                    ('Sábado', 'Sábado'),
-                    ('Domingo','Domingo')]
+class ScheduleDay(models.Model):
+    DAY_CHOICES = [ 
+                    ('Monday', 'Monday'),
+                    ('Tuesday', 'Tuesday'),
+                    ('Wednesday', 'Wednesday'),  
+                    ('Thursday', 'Thursday'), 
+                    ('Friday', 'Friday'),
+                    ('Saturday', 'Saturday'),
+                    ('Sunday','Sunday')]
 
-    dia = models.CharField(max_length=10, choices=DIA_CHOICES, unique=True)
+    day = models.CharField(max_length=10, choices=DAY_CHOICES, unique=True)
     closed = models.BooleanField(default=True)
-    openTime = models.TimeField(null=True, blank=True)
-    closeTime = models.TimeField(null=True, blank=True)
+    open_time = models.TimeField(null=True, blank=True)
+    close_time = models.TimeField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.dia} - {"Cerrado" if self.closed else f"{self.openTime} a {self.closeTime}"}'
+        return f'{self.day} - {"Closed" if self.closed else f"{self.open_time} to {self.close_time}"}'
 
 class Person(models.Model):
     username = models.CharField(max_length=255, unique=True)
@@ -30,7 +31,7 @@ class Person(models.Model):
     is_admin = models.BooleanField(default=False)
 
     class Meta:
-        abstract = True  # Define esta clase como abstracta
+        abstract = True  # Define this class as abstract
 
     def __str__(self):
         return self.username
@@ -38,15 +39,15 @@ class Person(models.Model):
 
 class User(Person):
     uid = models.CharField(max_length=255, unique=True, primary_key=True)
-    programa = models.CharField(max_length=255)
-    codigo_estudiantil = models.PositiveIntegerField(default=0, unique=True)
-    telefono = models.CharField(max_length=20, blank=True, null=True)  # Campo nuevo opcional
+    program = models.CharField(max_length=255)
+    student_code = models.PositiveIntegerField(default=0, unique=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)  # New optional field
     photo_url = models.URLField(max_length=500, null=True, blank=True)
 
-    # Campos para rastrear si han sido editados
-    codigo_estudiantil_editado = models.BooleanField(default=False)
-    programa_editado = models.BooleanField(default=False)
-    telefono_editado = models.BooleanField(default=False)
+    # Fields to track if they have been edited
+    student_code_edited = models.BooleanField(default=False)
+    program_edited = models.BooleanField(default=False)
+    phone_edited = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
@@ -57,52 +58,50 @@ class Admin(Person):
     def __str__(self):
         return self.username
 
-class Reserva(models.Model):
-    id_reserva = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
-    fecha = models.DateField()
-    hora = models.TimeField()
-    cantidad_horas = models.PositiveIntegerField(default=1)
-    hora_fin = models.TimeField(blank=True, null=True)  # Nuevo campo
+class Reservation(models.Model):
+    reservation_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
+    date = models.DateField()
+    time = models.TimeField()
+    hours_amount = models.PositiveIntegerField(default=1)
+    end_time = models.TimeField(blank=True, null=True)  # New field
 
     def save(self, *args, **kwargs):
-        # Calcular la hora de finalización al guardar la reserva
-        if self.hora and self.cantidad_horas:
-            hora_fin = (datetime.combine(date(1, 1, 1), self.hora) +
-                        timedelta(hours=self.cantidad_horas)).time()
-            self.hora_fin = hora_fin
+        # Calculate the end time when saving the reservation
+        if self.time and self.hours_amount:
+            end_time = (datetime.combine(date(1, 1, 1), self.time) +
+                        timedelta(hours=self.hours_amount)).time()
+            self.end_time = end_time
 
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.usuario.nombre} - {self.cantidad_horas} hora(s) el {self.fecha} a las {self.hora}'
+        return f'{self.user.username} - {self.hours_amount} hour(s) on {self.date} at {self.time}'
 
-class Penalizacion(models.Model):
-    id_penalizacion = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
-    fecha_inicio = models.DateTimeField()
-    fecha_fin = models.DateTimeField()
-
-    def __str__(self):
-        return f'{self.usuario.nombre} - {self.fecha_inicio} a {self.fecha_fin}'
-
-class Asistencia(models.Model):
-    id_asistencia = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
-    fecha = models.DateField()
-    hora = models.TimeField()
-    cantidad_horas = models.PositiveIntegerField(default=1)
+class Penalty(models.Model):
+    penalty_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
 
     def __str__(self):
-        return f'{self.usuario.nombre} - {self.cantidad_horas} hora(s) el {self.fecha} a las {self.hora}'
+        return f'{self.user.username} - {self.start_date} to {self.end_date}'
+
+class Attendance(models.Model):
+    attendance_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
+    date = models.DateField()
+    time = models.TimeField()
+    hours_amount = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.hours_amount} hour(s) on {self.date} at {self.time}'
     
-class Membresia(models.Model):
-    id_membresia = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField()
+class Membership(models.Model):
+    membership_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='uid')
+    start_date = models.DateField()
+    end_date = models.DateField()
 
     def __str__(self):
-        return f'{self.usuario.nombre} - {self.fecha_inicio} a {self.fecha_fin}'
-    
-
+        return f'{self.user.username} - {self.start_date} to {self.end_date}'

@@ -1,51 +1,50 @@
 from rest_framework import serializers
-from .models import User, Admin, Reserva, Penalizacion, Asistencia, HorarioDia, Membresia
+from .models import User, Admin, Reservation, Penalty, Attendance, ScheduleDay, Membership
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'uid', 'username', 'password', 'email', 'is_admin', 'programa', 
-            'codigo_estudiantil', 'telefono', 'photo_url', 'codigo_estudiantil_editado', 
-            'programa_editado', 'telefono_editado'
+            'uid', 'username', 'password', 'email', 'is_admin', 'program', 
+            'student_code', 'phone', 'photo_url', 'student_code_edited', 
+            'program_edited', 'phone_edited'
         )
         extra_kwargs = {'password': {'write_only': True}}
 
-class ReservaSerializer(serializers.ModelSerializer):
+class ReservationSerializer(serializers.ModelSerializer):
     
-    usuario = UserSerializer()  
+    user = UserSerializer()  
 
     class Meta:
-        model = Reserva
-        fields = ('id_reserva', 'usuario', 'fecha', 'hora', 'cantidad_horas')
+        model = Reservation
+        fields = ('reservation_id', 'user', 'date', 'time', 'hours_amount')
 
-class PenalizacionSerializer(serializers.ModelSerializer):
+class PenaltySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Penalizacion
+        model = Penalty
         fields = '__all__'
 
-class AsistenciaSerializer(serializers.ModelSerializer):
+class AttendanceSerializer(serializers.ModelSerializer):
 
-    usuario = UserSerializer() 
+    user = UserSerializer() 
 
     class Meta:
-        model = Asistencia
-        fields = ('id_asistencia', 'usuario', 'fecha', 'hora', 'cantidad_horas')
+        model = Attendance
+        fields = ('attendance_id', 'user', 'date', 'time', 'hours_amount')
 
-class HorarioDiaSerializer(serializers.ModelSerializer):
+class ScheduleDaySerializer(serializers.ModelSerializer):
     class Meta:
-        model = HorarioDia
+        model = ScheduleDay
         fields = '__all__'
 
-class MembresiaSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer() 
+class MembershipSerializer(serializers.ModelSerializer):
+    user = UserSerializer() 
     class Meta:
-        model = Membresia
-        fields = ['id_membresia', 'fecha_inicio', 'fecha_fin', 'usuario']
+        model = Membership
+        fields = ['membership_id', 'start_date', 'end_date', 'user']
 
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
         fields = ('username', 'password', 'email', 'is_admin')
         extra_kwargs = {'password': {'write_only': True}}
-

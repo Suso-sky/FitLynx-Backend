@@ -1,45 +1,44 @@
 from django.contrib import admin
-from .models import Gym, Admin, User, Reserva, Penalizacion, Asistencia, HorarioDia, Membresia
+from .models import Gym, Admin, User, Reservation, Penalty, Attendance, ScheduleDay, Membership
 
 @admin.register(Gym)
 class GymAdmin(admin.ModelAdmin):
-    list_display = ('gym_id', 'nombre', 'aforo_max')
-    search_fields = ('nombre', 'aforo_max')
+    list_display = ('gym_id', 'name', 'max_capacity')
+    search_fields = ('name', 'max_capacity')
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'programa', 'codigo_estudiantil', 'email', 'uid', 'photo_url')
-    search_fields = ('username', 'codigo_estudiantil', 'uid', 'photo_url')
+    list_display = ('username', 'program', 'student_code', 'email', 'uid', 'photo_url')
+    search_fields = ('username', 'student_code', 'uid', 'photo_url')
 
 @admin.register(Admin)
 class AdminAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'is_admin')
     search_fields = ('username', 'email')
 
-@admin.register(Reserva)
-class ReservaAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'fecha', 'hora', 'cantidad_horas','hora_fin', 'id_reserva')
-    list_filter = ('usuario', 'fecha')
-    search_fields = ('usuario__codigo_estudiantil', 'fecha')
+@admin.register(Reservation)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'time', 'hours_amount', 'end_time', 'reservation_id')
+    list_filter = ('user', 'date')
+    search_fields = ('user__student_code', 'date')
 
-@admin.register(Penalizacion)
-class PenalizacionAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'fecha_inicio', 'fecha_fin', 'id_penalizacion')
-    search_fields = ('usuario__codigo_estudiantil', 'id_penalizacion')
+@admin.register(Penalty)
+class PenaltyAdmin(admin.ModelAdmin):
+    list_display = ('user', 'start_date', 'end_date', 'penalty_id')
+    search_fields = ('user__student_code', 'penalty_id')
 
-@admin.register(Asistencia)
-class AsistenciaAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'fecha', 'hora', 'cantidad_horas', 'id_asistencia')
-    list_filter = ('usuario', 'fecha')
-    search_fields = ('usuario__codigo_estudiantil', 'fecha')
+@admin.register(Attendance)
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'time', 'hours_amount', 'attendance_id')
+    list_filter = ('user', 'date')
+    search_fields = ('user__student_code', 'date')
 
-@admin.register(HorarioDia)
-class HorarioDiaAdmin(admin.ModelAdmin):
-    list_display = ('dia', 'openTime', 'closeTime')
-    search_fields = ('dia',)
+@admin.register(ScheduleDay)
+class ScheduleDayAdmin(admin.ModelAdmin):
+    list_display = ('day', 'open_time', 'close_time')
+    search_fields = ('day',)
 
-@admin.register(Membresia)
-class MembresiaAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'fecha_inicio', 'fecha_fin', 'id_membresia')
-    search_fields = ('usuario__codigo_estudiantil', 'id_membresia')
-
+@admin.register(Membership)
+class MembershipAdmin(admin.ModelAdmin):
+    list_display = ('user', 'start_date', 'end_date', 'membership_id')
+    search_fields = ('user__student_code', 'membership_id')

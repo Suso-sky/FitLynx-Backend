@@ -9,7 +9,7 @@ class PenalizeView(APIView):
         try:
             # Obtain data from the POST request
             reservation_id = request.data.get('id')
-            start_date = datetime.strptime(request.data.get('fecha'), '%Y-%m-%d')
+            start_date = datetime.strptime(request.data.get('date'), '%Y-%m-%d')
             end_date = start_date + timedelta(days=7)
             
             # Retrieve the reservation object

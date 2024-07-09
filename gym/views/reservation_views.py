@@ -80,14 +80,15 @@ class CreateReservationView(APIView):
 
             reservation_date_day = reservation_date.strftime('%A')
 
-            days = { "Monday": "Lunes",
-                     "Tuesday": "Martes",
-                     "Wednesday": "Miércoles", 
-                     "Thursday": "Jueves",
-                     "Friday": "Viernes",
-                     "Saturday": "Sábado", 
-                     "Sunday": "Domingo",
-                    }
+            days = { 
+                "Monday": "Monday",
+                "Tuesday": "Tuesday",
+                "Wednesday": "Wednesday", 
+                "Thursday": "Thursday",
+                "Friday": "Friday",
+                "Saturday": "Saturday", 
+                "Sunday": "Sunday",
+            }
             try:
                 schedule_day = ScheduleDay.objects.get(day=days[reservation_date_day])
             except ScheduleDay.DoesNotExist:

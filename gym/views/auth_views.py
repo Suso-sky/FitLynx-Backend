@@ -73,9 +73,9 @@ class CreateUserView(APIView):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
         uid = data.get('uid')
-        name = data.get('nombre')
-        program = data.get('programa')
-        student_code = data.get('codigo')
+        name = data.get('username')
+        program = data.get('program')
+        student_code = data.get('student_code')
         email = data.get('email')
         password = data.get('password')
         user_img = data.get('photo_url')
@@ -87,8 +87,8 @@ class CreateUserView(APIView):
             User.objects.create(
                 uid=uid,
                 username=name,
-                programa=program,
-                codigo_estudiantil=student_code,
+                program=program,
+                student_code=student_code,
                 email=email,
                 password=password,
                 photo_url=user_img

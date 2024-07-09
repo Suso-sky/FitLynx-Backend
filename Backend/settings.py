@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fitlynx',
+        'NAME': 'fitlynx_project',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': 'localhost',  # o la dirección de tu servidor PostgreSQL

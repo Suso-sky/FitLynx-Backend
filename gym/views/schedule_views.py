@@ -18,19 +18,19 @@ class GetSchedulesView(APIView):
 
 class UpdateScheduleView(APIView):
     def post(self, request, *args, **kwargs):
-        data = request.data.get('schedules', [])
+        data = request.data.get('updatedSchedule', [])
 
         for schedule_data in data:
             day = schedule_data.get('day')
             closed = schedule_data.get('closed', False)
-            open_time = schedule_data.get('openTime')
-            close_time = schedule_data.get('closeTime')
+            open_time = schedule_data.get('open_time')
+            close_time = schedule_data.get('close_time')
 
             try:
                 schedule, _ = ScheduleDay.objects.get_or_create(day=day)
                 schedule.closed = closed
-                schedule.openTime = open_time if not closed else None
-                schedule.closeTime = close_time if not closed else None
+                schedule.open_time = open_time if not closed else None
+                schedule.close_time = close_time if not closed else None
                 schedule.save()
             except ScheduleDay.DoesNotExist:
                 return Response({'success': False, 'message': f'El día {day} no es válido.'}, status=status.HTTP_400_BAD_REQUEST)

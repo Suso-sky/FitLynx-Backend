@@ -58,7 +58,7 @@ class CancelMembershipView(APIView):
         membership_id = data.get('membership_id')
         
         try:
-            membership = Membership.objects.get(id_Membership=membership_id)
+            membership = Membership.objects.get(membership_id=membership_id)
             membership.delete()
 
             return Response({"success": True, "message": "Membership canceled."}, status=status.HTTP_200_OK)

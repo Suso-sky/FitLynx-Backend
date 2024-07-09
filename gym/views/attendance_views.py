@@ -35,10 +35,10 @@ class AttendancesByUserView(APIView):
 class CreateAttendanceView(APIView):
     def post(self, request, *args, **kwargs):
         try:
-            reservation_id = request.data.get('id_reserva')
+            reservation_id = request.data.get('reservation_id')
 
             # Get the reservation with the provided reservation_id
-            reservation = Reservation.objects.get(id_reservation=reservation_id)
+            reservation = Reservation.objects.get(reservation_id=reservation_id)
 
             # Create the attendance with the reservation data
             attendance = Attendance.objects.create(
@@ -63,9 +63,9 @@ class CreateAttendanceWithoutReservationView(APIView):
     def post(self, request, *args, **kwargs):
         try:
             # Get the data sent from the frontend
-            user_data = request.data.get('usuario')
-            hour = request.data.get('hora')
-            hours_amount = request.data.get('cantidad_horas')
+            user_data = request.data.get('user')
+            hour = request.data.get('time')
+            hours_amount = request.data.get('hours_amount')
             date = timezone.now().date()  # Use the current date
 
             try:

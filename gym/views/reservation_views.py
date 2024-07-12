@@ -8,7 +8,11 @@ import json
 from dateutil.relativedelta import relativedelta, MO
 from django.db.models import Sum
 
+from rest_framework.permissions import IsAuthenticated
+
 class CreateReservationView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         try:
             # Obtain data from the request body
@@ -127,6 +131,8 @@ class CreateReservationView(APIView):
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GetReservationsView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         try:
             # Obtain all reservations
@@ -139,6 +145,8 @@ class GetReservationsView(APIView):
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CancelReservationView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
         reservation_id = data.get('reservation_id')

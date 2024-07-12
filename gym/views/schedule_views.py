@@ -2,13 +2,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from gym.models import ScheduleDay
+from gym.permissions import IsAdminUser
 from gym.serializers import ScheduleDaySerializer
 
 from rest_framework.permissions import IsAuthenticated
 
 
 class GetSchedulesView(APIView):
-
     permission_classes = [IsAuthenticated]
     
     def get(self, request, *args, **kwargs):
@@ -23,8 +23,7 @@ class GetSchedulesView(APIView):
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UpdateScheduleView(APIView):
-
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         data = request.data.get('updatedSchedule', None)

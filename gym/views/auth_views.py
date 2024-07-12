@@ -39,6 +39,8 @@ class LoginView(APIView):
             return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)
         
 class CheckUserView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
@@ -68,6 +70,8 @@ class CheckUserView(APIView):
             return JsonResponse({'error': 'Server error: ' + str(e)}, status=500)
 
 class CreateUserView(APIView):
+    permission_classes = [AllowAny]
+    
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
         uid = data.get('uid')

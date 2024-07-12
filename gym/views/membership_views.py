@@ -5,7 +5,12 @@ from gym.models import User, Membership
 from gym.serializers import MembershipSerializer
 import json
 
+from rest_framework.permissions import IsAuthenticated
+from gym.permissions import IsAdminUser
+
 class CreateMembershipView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
     def post(self, request, *args, **kwargs):
         # Get data from the POST request
         data = json.loads(request.body)
@@ -41,6 +46,8 @@ class CreateMembershipView(APIView):
             return Response({"success": False, 'message': f"No user exists with student code {student_code}."}, status=status.HTTP_400_BAD_REQUEST)
 
 class GetMembershipsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
     def get(self, request, *args, **kwargs):
         try:
             # Get all memberships
@@ -53,6 +60,8 @@ class GetMembershipsView(APIView):
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CancelMembershipView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
         membership_id = data.get('membership_id')

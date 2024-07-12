@@ -6,7 +6,12 @@ from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from datetime import time, date
 
+from rest_framework.permissions import IsAuthenticated
+from gym.permissions import IsAdminUser
+
 class ReportView(View):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
     def get(self, request, *args, **kwargs):
         # Get attendances from the database
         attendances = Attendance.objects.all()

@@ -4,7 +4,12 @@ from rest_framework import status
 from gym.models import Reservation, Penalty
 from datetime import datetime, timedelta
 
+from rest_framework.permissions import IsAuthenticated
+from gym.permissions import IsAdminUser
+
 class PenalizeView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
     def post(self, request, *args, **kwargs):
         try:
             # Obtain data from the POST request

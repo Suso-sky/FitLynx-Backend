@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 class GetUsersView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):

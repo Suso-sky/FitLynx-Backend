@@ -6,7 +6,12 @@ from gym.serializers import ReservationSerializer, AttendanceSerializer
 from django.http import JsonResponse
 from django.utils import timezone
 
+from rest_framework.permissions import IsAuthenticated
+from gym.permissions import IsAdminUser
+
 class AttendancesByUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         try:
             # Get the uid from the URL parameters
@@ -33,6 +38,8 @@ class AttendancesByUserView(APIView):
             return JsonResponse({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CreateAttendanceView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
     def post(self, request, *args, **kwargs):
         try:
             reservation_id = request.data.get('reservation_id')
@@ -60,6 +67,8 @@ class CreateAttendanceView(APIView):
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class CreateAttendanceWithoutReservationView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
     def post(self, request, *args, **kwargs):
         try:
             # Get the data sent from the frontend

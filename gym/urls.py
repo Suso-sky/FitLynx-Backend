@@ -10,6 +10,8 @@ from .views.report_views import ReportView
 from .views.user_views import GetUsersView, UserViewSet
 from .views.reservation_views import CreateReservationView, GetReservationsView, CancelReservationView
 
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 
@@ -34,4 +36,7 @@ urlpatterns = [
     path('GetMemberships/', GetMembershipsView.as_view(), name='Memberships'),  # Get memberships endpoint
     path('CancelMembership/', CancelMembershipView.as_view(), name='Cancel Membership'),  # Cancel membership endpoint
     path('GetUsers/', GetUsersView.as_view(), name='Users'),  # Get users endpoint
+
+    #path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

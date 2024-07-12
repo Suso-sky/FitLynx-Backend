@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Gym, Admin, User, Reservation, Penalty, Attendance, ScheduleDay, Membership
+from .models import Gym, User, Reservation, Penalty, Attendance, ScheduleDay, Membership
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 @admin.register(Gym)
 class GymAdmin(admin.ModelAdmin):
@@ -7,14 +8,29 @@ class GymAdmin(admin.ModelAdmin):
     search_fields = ('name', 'max_capacity')
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'program', 'student_code', 'email', 'uid', 'photo_url')
-    search_fields = ('username', 'student_code', 'uid', 'photo_url')
+class UserAdmin(BaseUserAdmin):
+    list_display = ('id', 'username', 'program', 'student_code', 'email', 'uid', 'photo_url', 'is_admin')
+    search_fields = ('id', 'username', 'student_code', 'uid', 'photo_url', 'email')
+    readonly_fields = ('id',)
 
-@admin.register(Admin)
-class AdminAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'is_admin')
-    search_fields = ('username', 'email')
+    # Opcional: Puedes personalizar estos campos según tus necesidades
+    filter_horizontal = ()
+    list_filter = ('is_admin',)
+    fieldsets = (
+        (None, {'fields': ('email', 'username', 'password')}),
+        ('Personal info', {'fields': ('program', 'student_code', 'uid', 'phone', 'photo_url')}),
+        ('Permissions', {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login',)}),
+    )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'username', 'password1', 'password2', 'is_admin', 'is_active', 'is_staff', 'is_superuser')}
+        ),
+    )
+
+    ordering = ('email',)
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
@@ -42,3 +58,4 @@ class ScheduleDayAdmin(admin.ModelAdmin):
 class MembershipAdmin(admin.ModelAdmin):
     list_display = ('user', 'start_date', 'end_date', 'membership_id')
     search_fields = ('user__student_code', 'membership_id')
+

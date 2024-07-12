@@ -1,45 +1,43 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from gym.models import User, Admin
+from gym.models import User
 from django.http import JsonResponse
 import json 
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from datetime import datetime, timedelta
+from django.utils.timezone import now
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
+
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
 
         try:
-            admin = Admin.objects.get(email=email)
-            if admin.password == password:
-                user_data = {
-                    "username": admin.username,
-                    "email": admin.email,
-                    "is_admin": True,
-                }
-                return Response({"success": True, "message": "Login successful.", "data": user_data}, status=status.HTTP_200_OK)
-            else:
-                return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)
-        except Admin.DoesNotExist:
-            pass
-
-        try:
             user = User.objects.get(email=email)
-            if user.password == password:
+            if user.check_password(password):
+                refresh = RefreshToken.for_user(user)
                 user_data = {
                     "username": user.username,
                     "email": user.email,
                     "uid": user.uid,
-                    "is_admin": False, 
-                    "photo_url": user.photo_url
+                    "is_admin": user.is_admin,
+                    "photo_url": user.photo_url,
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
                 }
                 return Response({"success": True, "message": "Login successful.", "data": user_data}, status=status.HTTP_200_OK)
             else:
                 return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)
         except User.DoesNotExist:
             return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)
-
+        
 class CheckUserView(APIView):
     def post(self, request, *args, **kwargs):
         try:
@@ -94,20 +92,3 @@ class CreateUserView(APIView):
                 photo_url=user_img
             )
             return Response({"success": True, "message": "User created successfully."}, status=status.HTTP_201_CREATED)
-
-class LoginUserView(APIView):
-    def post(self, request, *args, **kwargs):
-        username = request.data.get("username")
-        password = request.data.get("password")
-
-        try:
-            admin = Admin.objects.get(username=username)
-            if admin.password == password:
-                user_data = {
-                    "username": admin.username,
-                }
-                return Response({"success": True, "message": "Login successful.", "data": user_data}, status=status.HTTP_200_OK)
-            else:
-                return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)
-        except Admin.DoesNotExist:
-            return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)

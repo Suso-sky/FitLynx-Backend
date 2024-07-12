@@ -20,6 +20,11 @@ class CreateReservationView(APIView):
             hours_amount = int(data.get('hours_amount'))
             user = User.objects.get(uid=uid)
 
+
+            # Validate if the user is an admin
+            if user.is_admin:
+                return Response({"success": False, "message": "Administrators cannot make reservations."}, status=status.HTTP_401_UNAUTHORIZED)
+
             # Validate penalty
             try:
                 penalty_user = Penalty.objects.get(user=user, end_date__gte=current_date)

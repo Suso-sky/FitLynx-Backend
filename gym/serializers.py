@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import User, Admin, Reservation, Penalty, Attendance, ScheduleDay, Membership
+from .models import User, Reservation, Penalty, Attendance, ScheduleDay, Membership
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'uid', 'username', 'password', 'email', 'is_admin', 'program', 
+            'id','uid', 'username', 'password', 'email', 'is_admin', 'program', 
             'student_code', 'phone', 'photo_url', 'student_code_edited', 
             'program_edited', 'phone_edited'
         )
@@ -42,9 +42,3 @@ class MembershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Membership
         fields = ['membership_id', 'start_date', 'end_date', 'user']
-
-class AdminSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Admin
-        fields = ('username', 'password', 'email', 'is_admin')
-        extra_kwargs = {'password': {'write_only': True}}

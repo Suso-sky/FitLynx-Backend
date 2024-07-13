@@ -27,14 +27,14 @@ class CreateReservationView(APIView):
 
             # Validate if the user is an admin
             if user.is_admin:
-                return Response({"success": False, "message": "Administrators cannot make reservations."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": "Los administradores no pueden realizar reservas."}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Validate penalty
             try:
                 penalty_user = Penalty.objects.get(user=user, end_date__gte=current_date)
                 next_day_end = penalty_user.end_date + timedelta(days=1)
                 next_day_str = next_day_end.strftime('%Y-%m-%d')
-                return Response({"success": False, "message": f"You are penalized, you cannot make a reservation, you can reserve again from {next_day_str}."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": f"Estás penalizad@ , no puedes hacer una reserva, puedes volver a reservar desde el dia {next_day_str}."}, status=status.HTTP_401_UNAUTHORIZED)
             
             except Penalty.DoesNotExist:
                 pass  # No active penalty found
@@ -59,7 +59,7 @@ class CreateReservationView(APIView):
                 if (is_pe_student and total_attendance_hours >= 4) or (not is_pe_student and total_attendance_hours >= 2):
                     return Response({
                         "success": False, 
-                        "message": "You have reached your weekly free attendance limit, you can reserve again next week or purchase a gym membership."
+                        "message": "Has alcanzado tu límite semanal de asistencia gratuita, puedes reservar de nuevo la próxima semana o adquirir una memebresía \nPara más informacion, acercarse a las instalaciones del gimnasio."
                     }, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validate capacity
@@ -78,41 +78,41 @@ class CreateReservationView(APIView):
             )
             
             if overlapping_reservations.count() >= max_capacity:
-                return Response({"success": False, "message": "Capacity full for this time interval."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": "Aforo lleno para este intervalo de tiempo."}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Check if user has any active reservation    
             user_reservations = Reservation.objects.filter(user=user).exists()
             if user_reservations:
-                return Response({"success": False, "message": "You already have a reservation made."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": "Ya has realizado una reserva previamente."}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validate Schedule
 
             reservation_date_day = reservation_date.strftime('%A')
 
             days = { 
-                "Monday": "Monday",
-                "Tuesday": "Tuesday",
-                "Wednesday": "Wednesday", 
-                "Thursday": "Thursday",
-                "Friday": "Friday",
-                "Saturday": "Saturday", 
-                "Sunday": "Sunday",
+                "Monday": "Lunes",
+                "Tuesday": "Martes",
+                "Wednesday": "Miércoles", 
+                "Thursday": "Jueves",
+                "Friday": "Viernes",
+                "Saturday": "Sábado", 
+                "Sunday": "Domingo",
             }
             try:
                 schedule_day = ScheduleDay.objects.get(day=days[reservation_date_day])
             except ScheduleDay.DoesNotExist:
-                return Response({'success': False, 'message': f'{days[reservation_date_day]} does not have a defined schedule.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'success': False, 'message': f'El dia {days[reservation_date_day]} no tiene un horario asignado.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Check if the day is closed
             if  schedule_day.closed:
-                return Response({'success': False, 'message': f'{days[reservation_date_day]} the gym is closed.'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'success': False, 'message': f'El dia {days[reservation_date_day]} está cerrado el gimnasio.'}, status=status.HTTP_401_UNAUTHORIZED)
             
             open_datetime = datetime.combine(reservation_date, schedule_day.open_time)
             close_datetime = datetime.combine(reservation_date, schedule_day.close_time)
 
             # Check Attendance Range
             if not (open_datetime <= datetime.combine(reservation_date, reservation_time) <= close_datetime and datetime.combine(reservation_date, reservation_time) + timedelta(hours=hours_amount) <= close_datetime):
-                return Response({"success": False, "message": "The time is not within the allowed range."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": "La hora no está dentro del rango permitido."}, status=status.HTTP_401_UNAUTHORIZED)
             
             # Create the reservation
             reservation = Reservation.objects.create(
@@ -122,10 +122,10 @@ class CreateReservationView(APIView):
                 hours_amount=hours_amount
             )
 
-            return Response({"success": True, "message": "Reservation created successfully."}, status=status.HTTP_201_CREATED) 
+            return Response({"success": True, "message": "Reserva creada exitosamente."}, status=status.HTTP_201_CREATED) 
         
         except User.DoesNotExist:
-            return Response({"success": False, "message": "You must fill out the registration form first."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "Primero debe rellenar el formulario de registro."}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -155,7 +155,7 @@ class CancelReservationView(APIView):
             reservation = Reservation.objects.get(reservation_id=reservation_id)
             reservation.delete()
 
-            return Response({"success": True, "message": "Reservation canceled."}, status=status.HTTP_200_OK)
+            return Response({"success": True, "message": "Reserva cancelada."}, status=status.HTTP_200_OK)
         
         except Reservation.DoesNotExist:
-            return Response({"success": False, "message": "The reservation does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "La reserva no existe."}, status=status.HTTP_404_NOT_FOUND)

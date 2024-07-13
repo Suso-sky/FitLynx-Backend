@@ -31,7 +31,7 @@ class CreateMembershipView(APIView):
                     start_date__lte=end_date
                 )
                 
-                return Response({"success": False, "message": f"The user with student code {student_code} already has an active membership."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": f"El usuario con código {student_code} ya tiene una membresía activa."}, status=status.HTTP_401_UNAUTHORIZED)
             
             except Membership.DoesNotExist:
                 # Create a new membership
@@ -40,10 +40,10 @@ class CreateMembershipView(APIView):
                     start_date=start_date,
                     end_date=end_date,
                 )
-                return Response({"success": True, "message": "Membership created successfully."}, status=status.HTTP_201_CREATED)
+                return Response({"success": True, "message": "Membresía creada correctamente."}, status=status.HTTP_201_CREATED)
             
         except User.DoesNotExist:
-            return Response({"success": False, 'message': f"No user exists with student code {student_code}."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"success": False, 'message': f"No existe ningún usuario con el codigo {student_code}."}, status=status.HTTP_400_BAD_REQUEST)
 
 class GetMembershipsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -70,7 +70,7 @@ class CancelMembershipView(APIView):
             membership = Membership.objects.get(membership_id=membership_id)
             membership.delete()
 
-            return Response({"success": True, "message": "Membership canceled."}, status=status.HTTP_200_OK)
+            return Response({"success": True, "message": "Membresía cancelada correctamente."}, status=status.HTTP_200_OK)
         
         except Membership.DoesNotExist:
-            return Response({"success": False, "message": "Membership does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "La membresía no existe."}, status=status.HTTP_404_NOT_FOUND)

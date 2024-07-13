@@ -31,9 +31,9 @@ class PenalizeView(APIView):
             # Delete the reservation after penalizing
             reservation.delete()
 
-            return Response({'success': True, 'message': 'Reservation penalized and deleted'}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'message': 'Reserva eliminada y usuario penalizado.'}, status=status.HTTP_200_OK)
         
         except Reservation.DoesNotExist:
-            return Response({'success': False, 'message': 'Reservation not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'success': False, 'message': 'La reserva no existe.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

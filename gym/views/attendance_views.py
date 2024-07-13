@@ -32,7 +32,7 @@ class AttendancesByUserView(APIView):
             return JsonResponse({'success': True, 'attendances': attendances_serializer.data, 'reservations': reservations_serializer.data}) 
         
         except User.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'The user does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'success': False, 'message': 'El usuario no existe.'}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -58,10 +58,10 @@ class CreateAttendanceView(APIView):
             # Delete the reservation
             reservation.delete()
 
-            return Response({"success": True, "message": "Attendance created."}, status=status.HTTP_201_CREATED)
+            return Response({"success": True, "message": "Asistencia confirmada."}, status=status.HTTP_201_CREATED)
         
         except Reservation.DoesNotExist:
-            return Response({"success": False, "message": "The reservation does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"success": False, "message": "La reserva no existe."}, status=status.HTTP_404_NOT_FOUND)
         
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -81,7 +81,7 @@ class CreateAttendanceWithoutReservationView(APIView):
                 user = User.objects.get(uid=user_data['uid'])
             except User.DoesNotExist:
                 # Handle the case where the user does not exist
-                return Response({"success": False, "message": "The user does not exist."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
             # Create the attendance
             attendance = Attendance.objects.create(
                 usuario=user,
@@ -90,7 +90,7 @@ class CreateAttendanceWithoutReservationView(APIView):
                 cantidad_horas=hours_amount
             )
 
-            return Response({"success": True, "message": "Attendance created without reservation."}, status=status.HTTP_201_CREATED)
+            return Response({"success": True, "message": "Asistencia creada."}, status=status.HTTP_201_CREATED)
         
         except Exception as e:
             return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

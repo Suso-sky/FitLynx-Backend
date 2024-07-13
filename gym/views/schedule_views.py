@@ -29,7 +29,7 @@ class UpdateScheduleView(APIView):
         data = request.data.get('updatedSchedule', None)
         
         if not data:
-            return Response({'success': False, 'message': 'No schedule data provided.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'message': 'No hay datos sobre el horario.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             for schedule_data in data:
@@ -39,7 +39,7 @@ class UpdateScheduleView(APIView):
                 close_time = schedule_data.get('close_time')
 
                 if not day or (not closed and (not open_time or not close_time)):
-                    return Response({'success': False, 'message': f'Invalid data for {day}.'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'success': False, 'message': f'Información erronea en el día {day}.'}, status=status.HTTP_400_BAD_REQUEST)
 
                 schedule, _ = ScheduleDay.objects.get_or_create(day=day)
                 schedule.closed = closed
@@ -47,7 +47,7 @@ class UpdateScheduleView(APIView):
                 schedule.close_time = close_time if not closed else None
                 schedule.save()
 
-            return Response({'success': True, 'message': 'Updated schedule.'}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'message': 'Horario actualizado.'}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -32,11 +32,11 @@ class LoginView(APIView):
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
                 }
-                return Response({"success": True, "message": "Login successful.", "data": user_data}, status=status.HTTP_200_OK)
+                return Response({"success": True, "message": "Inicio de sesión exitoso.", "data": user_data}, status=status.HTTP_200_OK)
             else:
-                return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": "Usuario o contraseña incorrecta."}, status=status.HTTP_401_UNAUTHORIZED)
         except User.DoesNotExist:
-            return Response({"success": False, "message": "Incorrect username or password."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"success": False, "message": "Usuario o contraseña incorrecta."}, status=status.HTTP_401_UNAUTHORIZED)
         
 class CheckUserView(APIView):
     permission_classes = [AllowAny]
@@ -50,7 +50,7 @@ class CheckUserView(APIView):
             if not email or "@unillanos.edu.co" not in email:
                 return Response({
                     "success": False,
-                    "message": "You can only use FitLynx with an institutional email. (Try with your '@unillanos' extension email)"
+                    "message": "Sólo puedes utilizar FitLynx con un correo institucional. (Prueba con tu email de extensión '@unillanos')."
                 }, status=status.HTTP_401_UNAUTHORIZED)
 
             user_exists = User.objects.filter(uid=uid).exists()
@@ -58,7 +58,7 @@ class CheckUserView(APIView):
                 registered_user = User.objects.get(email=email)
                 return Response({
                     "success": False,
-                    "message": f"There is already a FitLynx account associated with the email {registered_user.email}"
+                    "message": f"Ya existe una cuenta FitLynx asociada al correo {registered_user.email}"
                 }, status=status.HTTP_403_FORBIDDEN)
 
             return Response({"user_exists": user_exists, "message": "User exists"}, status=status.HTTP_200_OK)
@@ -84,7 +84,7 @@ class CreateUserView(APIView):
 
         try:
             existing_user = User.objects.get(uid=uid)
-            return Response({"success": False, 'message': 'User already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"success": False, 'message': 'El usuario ya ha sido ingresado previamente.'}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             User.objects.create(
                 uid=uid,
@@ -95,4 +95,4 @@ class CreateUserView(APIView):
                 password=password,
                 photo_url=user_img
             )
-            return Response({"success": True, "message": "User created successfully."}, status=status.HTTP_201_CREATED)
+            return Response({"success": True, "message": "Usuario creado correctamente."}, status=status.HTTP_201_CREATED)

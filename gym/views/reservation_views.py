@@ -59,7 +59,7 @@ class CreateReservationView(APIView):
                 if (is_pe_student and total_attendance_hours >= 4) or (not is_pe_student and total_attendance_hours >= 2):
                     return Response({
                         "success": False, 
-                        "message": "Has alcanzado tu límite semanal de asistencia gratuita, puedes reservar de nuevo la próxima semana o adquirir una memebresía \nPara más informacion, acercarse a las instalaciones del gimnasio."
+                        "message": "Has alcanzado tu límite semanal de asistencia gratuita, puedes reservar de nuevo la próxima semana o adquirir una memebresía. Para más informacion, acercarse a las instalaciones del gimnasio."
                     }, status=status.HTTP_401_UNAUTHORIZED)
             
             # Validate capacity

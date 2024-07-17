@@ -66,12 +66,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     groups = models.ManyToManyField(
         'auth.Group',
-        related_name='gym_user_set',  # Cambia el related_name para evitar conflicto
+        related_name='gym_user_set',
         blank=True
     )
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        related_name='gym_user_permissions_set',  # Cambia el related_name para evitar conflicto
+        related_name='gym_user_permissions_set',
         blank=True
     )
 

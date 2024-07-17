@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+from gym.views.gym_view import GymViewSet
+
 from .views.attendance_views import CreateAttendanceView, AttendancesByUserView, CreateAttendanceWithoutReservationView
 from .views.auth_views import LoginView, CheckUserView, CreateUserView
 from .views.schedule_views import GetSchedulesView, UpdateScheduleView
@@ -14,9 +16,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
+router.register(r'gyms', GymViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),  # DefaultRouter-generated paths for 'users'
+    path('', include(router.urls)),  # DefaultRouter-generated paths for 'users' and 'gyms'
     
     # Custom paths for specific views
     path('Login/', LoginView.as_view(), name='login'),  # Login endpoint
@@ -37,6 +40,5 @@ urlpatterns = [
     path('CancelMembership/', CancelMembershipView.as_view(), name='Cancel Membership'),  # Cancel membership endpoint
     path('GetUsers/', GetUsersView.as_view(), name='Users'),  # Get users endpoint
 
-    #path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

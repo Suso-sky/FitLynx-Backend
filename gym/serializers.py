@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from .models import User, Reservation, Penalty, Attendance, ScheduleDay, Membership
+from .models import Gym, User, Reservation, Penalty, Attendance, ScheduleDay, Membership
+
+
+class GymSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gym
+        fields = ['gym_id', 'name', 'max_capacity']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

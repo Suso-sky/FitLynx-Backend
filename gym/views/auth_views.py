@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import now
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
+from django.contrib.auth.hashers import make_password
 
 
 class LoginView(APIView):
@@ -82,6 +83,8 @@ class CreateUserView(APIView):
         password = data.get('password')
         user_img = data.get('photo_url')
 
+        encrypted_password = make_password(password)
+
         try:
             existing_user = User.objects.get(uid=uid)
             return Response({"success": False, 'message': 'El usuario ya ha sido ingresado previamente.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -92,7 +95,7 @@ class CreateUserView(APIView):
                 program=program,
                 student_code=student_code,
                 email=email,
-                password=password,
+                password=encrypted_password,
                 photo_url=user_img
             )
             return Response({"success": True, "message": "Usuario creado correctamente."}, status=status.HTTP_201_CREATED)

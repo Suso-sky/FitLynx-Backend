@@ -6,11 +6,12 @@ from gym.permissions import IsAdminUser
 from gym.serializers import ScheduleDaySerializer
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 
 class GetSchedulesView(APIView):
-    permission_classes = [IsAuthenticated]
-    
+    permission_classes = [AllowAny]
+
     def get(self, request, *args, **kwargs):
         try:
             # Retrieve all schedules

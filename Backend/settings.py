@@ -146,6 +146,25 @@ AUTH_USER_MODEL = 'gym.User'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# CORS configuration
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200", 
+    "https://http://fitlynx.ddns.net",
+]
+
+# CSRF configuration
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200", 
+    "https://http://fitlynx.ddns.net",
+]
+
+# Secure cookies configuration
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 from datetime import timedelta
 
 SIMPLE_JWT = {

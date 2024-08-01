@@ -149,14 +149,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CORS configuration
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200", 
-    "https://http://fitlynx.ddns.net",
+    "https://localhost:4200", 
+    "https://fitlynx.ddns.net",
 ]
 
 # CSRF configuration
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:4200", 
-    "https://http://fitlynx.ddns.net",
+    "https://localhost:4200", 
+    "https://fitlynx.ddns.net",
 ]
 
 # Secure cookies configuration

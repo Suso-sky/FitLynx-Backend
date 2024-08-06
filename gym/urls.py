@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from gym.views.gym_view import GymViewSet
 
 from .views.attendance_views import CreateAttendanceView, AttendancesByUserView, CreateAttendanceWithoutReservationView
-from .views.auth_views import LoginView, CheckUserView, CreateUserView
+from .views.auth_views import LoginView, CheckUserView, CreateUserView, ChangePasswordView, PasswordResetRequestView, PasswordResetConfirmView
 from .views.schedule_views import GetSchedulesView, UpdateScheduleView
 from .views.membership_views import CancelMembershipView, GetMembershipsView, CreateMembershipView
 from .views.penalty_views import PenalizeView
@@ -25,6 +25,9 @@ urlpatterns = [
     path('Login/', LoginView.as_view(), name='login'),  # Login endpoint
     path('CheckUser/', CheckUserView.as_view(), name='Check User'),  # Check user endpoint
     path('CreateUser/', CreateUserView.as_view(), name='Create User'),  # Create user endpoint
+    path('ChangePassword/', ChangePasswordView.as_view(), name='Change Password'),  # Change Password endpoint
+    path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
+    path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('GetReport/', ReportView.as_view(), name='Report'),  # Get report endpoint
     path('CreateReserve/', CreateReservationView.as_view(), name='Create Reservation'),  # Create reservation endpoint
     path('AttendancesPerUser/', AttendancesByUserView.as_view(), name='Attendances per User'),  # Attendance per user endpoint

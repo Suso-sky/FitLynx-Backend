@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth.hashers import make_password
 from rest_framework.permissions import IsAuthenticated
 
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
@@ -160,10 +160,19 @@ class PasswordResetRequestView(APIView):
                 'uid': uid,
                 'token': token,
             })
-            send_mail(mail_subject, message, 'noreply@fitlynx.online', [email])
+            email_message = EmailMessage(
+                mail_subject,
+                message,
+                'fitlynx@outlook.com',
+                [email],
+            )
+            email_message.content_subtype = 'html'  # Esto es importante para enviar como HTML
+            email_message.send()
             return Response({"success": True, "message": "Se ha enviado un correo electrónico con las instrucciones para restablecer la contraseña."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"success": False, "message": "No existe un usuario con ese correo electrónico."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"success": False, "message": "Ocurrió un error al procesar la solicitud."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]

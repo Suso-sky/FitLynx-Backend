@@ -6,10 +6,11 @@ from gym.serializers import UserSerializer
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 
+from gym.permissions import IsAdminUser
 from rest_framework.permissions import IsAuthenticated
 
 class GetUsersView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, *args, **kwargs):
         student_code = request.query_params.get('student_code', None)

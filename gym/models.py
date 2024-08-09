@@ -7,7 +7,11 @@ class Gym(models.Model):
     name = models.CharField(max_length=255)
     max_capacity = models.PositiveIntegerField(default=0)
 
+    def __str__(self):
+        return f'{self.name} - {self.gym_id}'
+
 class ScheduleDay(models.Model):
+    gym = models.ForeignKey(Gym,  null=True, blank=True, on_delete=models.CASCADE, related_name='schedule_days', to_field='gym_id')
     DAY_CHOICES = [ 
                     ('Monday', 'Monday'),
                     ('Tuesday', 'Tuesday'),
@@ -17,13 +21,13 @@ class ScheduleDay(models.Model):
                     ('Saturday', 'Saturday'),
                     ('Sunday','Sunday')]
 
-    day = models.CharField(max_length=10, choices=DAY_CHOICES, unique=True)
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
     closed = models.BooleanField(default=True)
     open_time = models.TimeField(null=True, blank=True)
     close_time = models.TimeField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.day} - {"Closed" if self.closed else f"{self.open_time} to {self.close_time}"}'
+        return f'{self.gym.name} - {self.day} - {"Closed" if self.closed else f"{self.open_time} to {self.close_time}"}'
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
@@ -54,7 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     photo_url = models.URLField(max_length=500, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
+    gym = models.ForeignKey(Gym, null=True, blank=True, on_delete=models.SET_NULL, related_name='admin_users', to_field='gym_id')
     student_code_edited = models.BooleanField(default=False)
     program_edited = models.BooleanField(default=False)
     phone_edited = models.BooleanField(default=False)
@@ -77,17 +81,17 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-    
+
 class Reservation(models.Model):
     reservation_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='id')
+    gym = models.ForeignKey(Gym, null=True, blank=True, on_delete=models.CASCADE, related_name='reservations', to_field='gym_id')
     date = models.DateField()
     time = models.TimeField()
     hours_amount = models.PositiveIntegerField(default=1)
-    end_time = models.TimeField(blank=True, null=True)  # New field
+    end_time = models.TimeField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        # Calculate the end time when saving the reservation
         if self.time and self.hours_amount:
             end_time = (datetime.combine(date(1, 1, 1), self.time) +
                         timedelta(hours=self.hours_amount)).time()
@@ -96,12 +100,13 @@ class Reservation(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.user.username} - {self.hours_amount} hour(s) on {self.date} at {self.time}'
+        return f'{self.user.username} - {self.hours_amount} hour(s) on {self.date} at {self.time} in {self.gym.name}'
 
 class Penalty(models.Model):
     penalty_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='id')
     start_date = models.DateTimeField()
+    gym = models.ForeignKey(Gym, null=True, blank=True, on_delete=models.CASCADE, related_name='penalties', to_field='gym_id')
     end_date = models.DateTimeField()
 
     def __str__(self):
@@ -110,18 +115,20 @@ class Penalty(models.Model):
 class Attendance(models.Model):
     attendance_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='id')
+    gym = models.ForeignKey(Gym, null=True, blank=True, on_delete=models.CASCADE, related_name='attendances', to_field='gym_id')
     date = models.DateField()
     time = models.TimeField()
     hours_amount = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return f'{self.user.username} - {self.hours_amount} hour(s) on {self.date} at {self.time}'
+        return f'{self.user.username} - {self.hours_amount} hour(s) on {self.date} at {self.time} in {self.gym.name}'
     
 class Membership(models.Model):
     membership_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='id')
+    gym = models.ForeignKey(Gym, null=True, blank=True, on_delete=models.CASCADE, related_name='memberships', to_field='gym_id')
     start_date = models.DateField()
     end_date = models.DateField()
 
     def __str__(self):
-        return f'{self.user.username} - {self.start_date} to {self.end_date}'
+        return f'{self.user.username} - {self.start_date} to {self.end_date} in {self.gym.name}'

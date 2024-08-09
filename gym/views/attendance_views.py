@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from gym.models import User, Reservation, Attendance
+from gym.models import User, Reservation, Attendance, Gym
 from gym.serializers import ReservationSerializer, AttendanceSerializer
 from django.http import JsonResponse
 from django.utils import timezone
@@ -13,23 +13,25 @@ class AttendancesByUserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        try:
-            # Get the uid from the URL parameters
-            uid = request.query_params.get('uid')
+        gym_id = self.kwargs.get('gym_id')
+        uid = request.query_params.get('uid')
 
+        try:
             # Validate if the user exists
             user = User.objects.get(uid=uid)
 
-            # Get the user's Attendances
-            user_attendances = Attendance.objects.filter(user=user)
+            
+            if gym_id:
+                user_attendances = Attendance.objects.filter(user=user, gym_id=gym_id)
+                user_reservations = Reservation.objects.filter(user=user, gym_id=gym_id)
+            else:
+                user_attendances = Attendance.objects.filter(user=user)
+                user_reservations = Reservation.objects.filter(user=user)
+            
             attendances_serializer = AttendanceSerializer(user_attendances, many=True)
-
-            # Get the user's Reservations
-            user_reservations = Reservation.objects.filter(user=user)
             reservations_serializer = ReservationSerializer(user_reservations, many=True)
 
-            # Use .data to get the serialized data
-            return JsonResponse({'success': True, 'attendances': attendances_serializer.data, 'reservations': reservations_serializer.data}) 
+            return JsonResponse({'success': True, 'attendances': attendances_serializer.data, 'reservations': reservations_serializer.data})
         
         except User.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'El usuario no existe.'}, status=status.HTTP_404_NOT_FOUND)
@@ -48,11 +50,12 @@ class CreateAttendanceView(APIView):
             reservation = Reservation.objects.get(reservation_id=reservation_id)
 
             # Create the attendance with the reservation data
-            attendance = Attendance.objects.create(
+            Attendance.objects.create(
                 user=reservation.user,
                 date=reservation.date,
                 time=reservation.time,
-                hours_amount=reservation.hours_amount
+                hours_amount=reservation.hours_amount,
+                gym=reservation.gym
             )
 
             # Delete the reservation
@@ -75,19 +78,22 @@ class CreateAttendanceWithoutReservationView(APIView):
             user_data = request.data.get('user')
             hour = request.data.get('time')
             hours_amount = request.data.get('hours_amount')
-            date = timezone.now().date()  # Use the current date
-
+            date = timezone.now().date() 
+            gym_id = request.data.get('gym_id')
+            gym = Gym.objects.get(pk=gym_id)
+        
             try:
                 user = User.objects.get(uid=user_data['uid'])
             except User.DoesNotExist:
                 # Handle the case where the user does not exist
                 return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
             # Create the attendance
-            attendance = Attendance.objects.create(
+            Attendance.objects.create(
                 usuario=user,
                 fecha=date,
                 hora=hour,
-                cantidad_horas=hours_amount
+                cantidad_horas=hours_amount,
+                gym=gym
             )
 
             return Response({"success": True, "message": "Asistencia creada."}, status=status.HTTP_201_CREATED)

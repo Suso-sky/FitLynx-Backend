@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from gym.models import User, Membership
+from gym.models import User, Membership, Gym
 from gym.serializers import MembershipSerializer
 import json
 
@@ -17,7 +17,8 @@ class CreateMembershipView(APIView):
         student_code = data.get('student_code')
         start_date = data.get('start_date')
         end_date = data.get('end_date')
-        current_date = data.get('current_date')
+        gym_id = data.get('gym_id')
+        gym = Gym.objects.get(pk=gym_id)
         
         try:
             # Check if the user exists
@@ -28,17 +29,18 @@ class CreateMembershipView(APIView):
                 Membership.objects.get(
                     user=user, 
                     end_date__gte=start_date,
-                    start_date__lte=end_date
+                    start_date__lte=end_date,
+                    gym=gym
                 )
                 
-                return Response({"success": False, "message": f"El usuario con código {student_code} ya tiene una membresía activa."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"success": False, "message": f"El usuario con código {student_code} ya tiene una membresía activa en {gym.name}."}, status=status.HTTP_401_UNAUTHORIZED)
             
             except Membership.DoesNotExist:
-                # Create a new membership
                 Membership.objects.create(
                     user=user,
                     start_date=start_date,
                     end_date=end_date,
+                    gym=gym
                 )
                 return Response({"success": True, "message": "Membresía creada correctamente."}, status=status.HTTP_201_CREATED)
             
@@ -49,11 +51,15 @@ class GetMembershipsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, *args, **kwargs):
-        try:
-            # Get all memberships
-            memberships = Membership.objects.all()
-            serializer = MembershipSerializer(memberships, many=True)
+        gym_id = self.kwargs.get('gym_id') 
 
+        try:
+            if gym_id:
+                memberships = Membership.objects.filter(gym_id=gym_id)
+            else:
+                memberships = Membership.objects.all()
+
+            serializer = MembershipSerializer(memberships, many=True)
             return Response({'success': True, 'memberships': serializer.data}, status=status.HTTP_200_OK)
         
         except Exception as e:

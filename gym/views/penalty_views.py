@@ -20,12 +20,14 @@ class PenalizeView(APIView):
             # Retrieve the reservation object
             reservation = Reservation.objects.get(id_reservation=reservation_id)
             user = reservation.user
+            gym = reservation.gym
 
             # Create a penalty entry for the user
-            penalty = Penalty.objects.create(
+            Penalty.objects.create(
                 user=user,
                 start_date=start_date,
                 end_date=end_date,
+                gym = gym
             )
             
             # Delete the reservation after penalizing

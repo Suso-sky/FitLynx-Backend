@@ -23,7 +23,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ('reservation_id', 'user', 'date', 'time', 'hours_amount')
+        fields = ['reservation_id', 'user', 'date', 'time', 'hours_amount', 'end_time', 'mode']
 
 class PenaltySerializer(serializers.ModelSerializer):
     class Meta:

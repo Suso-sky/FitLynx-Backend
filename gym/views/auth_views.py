@@ -29,8 +29,12 @@ class LoginView(APIView):
 
         try:
             user = User.objects.get(email=email)
+            
+            # Check if the provided password is correct
             if user.check_password(password):
                 refresh = RefreshToken.for_user(user)
+                
+                # Prepare user data including gym ID if the user is an admin
                 user_data = {
                     "username": user.username,
                     "email": user.email,
@@ -39,13 +43,16 @@ class LoginView(APIView):
                     "photo_url": user.photo_url,
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
+                    "gym_id": user.gym.gym_id if user.is_admin and user.gym else None
                 }
+                
                 return Response({"success": True, "message": "Inicio de sesión exitoso.", "data": user_data}, status=status.HTTP_200_OK)
-            else:
-                return Response({"success": False, "message": "Usuario o contraseña incorrecta."}, status=status.HTTP_401_UNAUTHORIZED)
-        except User.DoesNotExist:
+            
             return Response({"success": False, "message": "Usuario o contraseña incorrecta."}, status=status.HTTP_401_UNAUTHORIZED)
         
+        except User.DoesNotExist:
+            return Response({"success": False, "message": "Usuario o contraseña incorrecta."}, status=status.HTTP_401_UNAUTHORIZED)
+
 class CheckUserView(APIView):
     permission_classes = [AllowAny]
 
@@ -150,6 +157,10 @@ class PasswordResetRequestView(APIView):
         email = request.data.get("email")
         try:
             user = User.objects.get(email=email)
+            
+            if user.is_superuser or user.is_staff:
+                return Response({"success": False, "message": "No se puede restablecer la contraseña para este usuario."}, status=status.HTTP_403_FORBIDDEN)
+            
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             current_site = get_current_site(request)

@@ -4,11 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from gym.permissions import IsAdminUser
 from gym.models import Gym
 from gym.serializers import GymSerializer
+from rest_framework.permissions import AllowAny
 
 class GymViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+
     queryset = Gym.objects.all()
     serializer_class = GymSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_object(self):
         gym_id = self.kwargs.get('pk')

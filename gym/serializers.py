@@ -18,33 +18,36 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
 class ReservationSerializer(serializers.ModelSerializer):
-    
     user = UserSerializer()  
+    gym = GymSerializer()
 
     class Meta:
         model = Reservation
-        fields = ['reservation_id', 'user', 'date', 'time', 'hours_amount', 'end_time', 'mode']
+        fields = ['reservation_id', 'user', 'gym', 'date', 'time', 'hours_amount', 'end_time']
 
 class PenaltySerializer(serializers.ModelSerializer):
     class Meta:
         model = Penalty
-        fields = '__all__'
+        fields = '_all_'
 
 class AttendanceSerializer(serializers.ModelSerializer):
 
-    user = UserSerializer() 
+    user = UserSerializer()
+    gym = GymSerializer()
 
     class Meta:
         model = Attendance
-        fields = ('attendance_id', 'user', 'date', 'time', 'hours_amount')
+        fields = ('attendance_id', 'user', 'date', 'time', 'hours_amount', 'gym')
 
 class ScheduleDaySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleDay
-        fields = '__all__'
+        fields = '_all_'
 
 class MembershipSerializer(serializers.ModelSerializer):
     user = UserSerializer() 
+    gym = GymSerializer()
+
     class Meta:
         model = Membership
-        fields = ['membership_id', 'start_date', 'end_date', 'user']
+        fields = ['membership_id', 'start_date', 'end_date', 'user', 'gym']

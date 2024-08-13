@@ -9,16 +9,15 @@ class GymAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ('id', 'username', 'program', 'student_code', 'email', 'uid', 'photo_url', 'is_admin')
+    list_display = ('id', 'username', 'program', 'student_code', 'email' ,'uid', 'photo_url', 'is_admin', 'gym')
     search_fields = ('id', 'username', 'student_code', 'uid', 'photo_url', 'email')
     readonly_fields = ('id',)
 
-    # Opcional: Puedes personalizar estos campos según tus necesidades
     filter_horizontal = ()
     list_filter = ('is_admin',)
     fieldsets = (
         (None, {'fields': ('email', 'username', 'password')}),
-        ('Personal info', {'fields': ('program', 'student_code', 'uid', 'phone', 'photo_url')}),
+        ('Personal info', {'fields': ('program', 'student_code', 'uid', 'phone', 'photo_url', 'gym')}),
         ('Permissions', {'fields': ('is_admin', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),
     )
@@ -26,7 +25,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'username', 'password1', 'password2', 'is_admin', 'is_active', 'is_staff', 'is_superuser')}
+            'fields': ('email', 'username', 'password1', 'password2', 'is_admin', 'is_active', 'is_staff', 'is_superuser', 'gym')}
         ),
     )
 

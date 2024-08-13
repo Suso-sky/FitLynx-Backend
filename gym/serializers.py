@@ -28,7 +28,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 class PenaltySerializer(serializers.ModelSerializer):
     class Meta:
         model = Penalty
-        fields = '_all_'
+        fields = '__all__'
 
 class AttendanceSerializer(serializers.ModelSerializer):
 
@@ -42,7 +42,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
 class ScheduleDaySerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduleDay
-        fields = '_all_'
+        fields = '__all__'
 
 class MembershipSerializer(serializers.ModelSerializer):
     user = UserSerializer() 

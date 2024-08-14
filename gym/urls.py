@@ -12,6 +12,8 @@ from .views.report_views import ReportView
 from .views.user_views import GetUsersView, UserViewSet
 from .views.reservation_views import CreateReservationView, GetReservationsView, CancelReservationView
 
+from django.contrib import admin
+
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
@@ -19,8 +21,11 @@ router.register(r'users', UserViewSet)
 router.register(r'gyms', GymViewSet)
 
 urlpatterns = [
+
     path('', include(router.urls)),  # DefaultRouter-generated paths for 'users' and 'gyms'
-    
+    path('admin/', admin.site.urls),
+
+
     # Custom paths for specific views
     path('Login/', LoginView.as_view(), name='login'),  # Login endpoint
     path('CheckUser/', CheckUserView.as_view(), name='Check User'),  # Check user endpoint

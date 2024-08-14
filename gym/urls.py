@@ -11,7 +11,7 @@ from .views.penalty_views import PenalizeView
 from .views.report_views import ReportView
 from .views.user_views import GetUsersView, UserViewSet
 from .views.reservation_views import CreateReservationView, GetReservationsView, CancelReservationView
-
+    
 from django.contrib import admin
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView

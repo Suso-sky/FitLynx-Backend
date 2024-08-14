@@ -10,21 +10,18 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from gym.permissions import IsAdminUser
 
+
 class ReportView(View):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, *args, **kwargs):
         # Get the gym_id from the URL parameters
-        gym_id = request.GET.get('gym_id', None)
-        
+        gym_id = self.kwargs.get('gym_id') 
+
         try:
-            if gym_id:
-                # Filter attendances by the specified gym
-                gym = get_object_or_404(Gym, gym_id=gym_id)
-                attendances = Attendance.objects.filter(gym=gym)
-            else:
-                # Retrieve all attendances if no gym_id is provided
-                attendances = Attendance.objects.all()
+            # Filter attendances by the specified gym
+            gym = get_object_or_404(Gym, gym_id=gym_id)
+            attendances = Attendance.objects.filter(gym=gym)
 
             # Create a pandas DataFrame with attendance data
             data = {

@@ -43,7 +43,8 @@ class LoginView(APIView):
                     "photo_url": user.photo_url,
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
-                    "gym_id": user.gym.gym_id if user.is_admin and user.gym else None
+                    "gym_id": user.gym.gym_id if user.is_admin and user.gym else None,
+                    "gym_name": user.gym.name if user.is_admin and user.gym else None
                 }
                 
                 return Response({"success": True, "message": "Inicio de sesión exitoso.", "data": user_data}, status=status.HTTP_200_OK)
@@ -163,11 +164,11 @@ class PasswordResetRequestView(APIView):
             
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            current_site = get_current_site(request)
+            client_domain = 'https://fitlynx.ddns.net/'
             mail_subject = 'Restablecer la contraseña'
             message = render_to_string('reset_password_email.html', {
                 'user': user,
-                'domain': current_site.domain,
+                'domain': client_domain,
                 'uid': uid,
                 'token': token,
             })
@@ -177,7 +178,7 @@ class PasswordResetRequestView(APIView):
                 'fitlynx@outlook.com',
                 [email],
             )
-            email_message.content_subtype = 'html'  # Esto es importante para enviar como HTML
+            email_message.content_subtype = 'html'
             email_message.send()
             return Response({"success": True, "message": "Se ha enviado un correo electrónico con las instrucciones para restablecer la contraseña."}, status=status.HTTP_200_OK)
         except User.DoesNotExist:

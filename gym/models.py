@@ -13,13 +13,13 @@ class Gym(models.Model):
 class ScheduleDay(models.Model):
     gym = models.ForeignKey(Gym,  null=True, blank=True, on_delete=models.CASCADE, related_name='schedule_days', to_field='gym_id')
     DAY_CHOICES = [ 
-                    ('Monday', 'Monday'),
-                    ('Tuesday', 'Tuesday'),
-                    ('Wednesday', 'Wednesday'),  
-                    ('Thursday', 'Thursday'), 
-                    ('Friday', 'Friday'),
-                    ('Saturday', 'Saturday'),
-                    ('Sunday','Sunday')]
+                    ('Lunes', 'Lunes'),
+                    ('Martes', 'Martes'),
+                    ('Miércoles', 'Miércoles'),  
+                    ('Jueves', 'Jueves'), 
+                    ('Viernes', 'Viernes'),
+                    ('Sábado', 'Sábado'),
+                    ('Domingo','Domingo')]
 
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
     closed = models.BooleanField(default=True)

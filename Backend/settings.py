@@ -168,13 +168,6 @@ SESSION_COOKIE_SAMESITE = 'Strict'
 
 SESSION_COOKIE_AGE = 1209600
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp-mail.outlook.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'fitlynx@outlook.com'
-EMAIL_HOST_PASSWORD = 'xlynx2024'
-
 from datetime import timedelta
 
 SIMPLE_JWT = {

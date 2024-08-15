@@ -38,9 +38,9 @@ class CreateReservationView(APIView):
 
             try:
                 membership_user = Membership.objects.get(user=user, gym=gym, end_date__gte=current_date)
-                print(f"{user.username} has an active membership until {membership_user.end_date}")                
+                
             except Membership.DoesNotExist:
-                print(f"{user.username} does not have active memberships")
+                
                 last_monday = current_date + relativedelta(weekday=MO(-1))
                 total_attendance_hours = Attendance.objects.filter(
                     user=user,
@@ -76,16 +76,17 @@ class CreateReservationView(APIView):
             reservation_date_day = reservation_date.strftime('%A')
 
             days = { 
-                "Monday": "Monday",
-                "Tuesday": "Tuesday",
-                "Wednesday": "Wednesday", 
-                "Thursday": "Thursday",
-                "Friday": "Friday",
-                "Saturday": "Saturday", 
-                "Sunday": "Sunday",
+                "Monday": "Lunes",
+                "Tuesday": "Martes",
+                "Wednesday": "Miércoles", 
+                "Thursday": "Jueves",
+                "Friday": "Viernes",
+                "Saturday": "Sábado", 
+                "Sunday": "Domingo",
             }
             try:
-                schedule_day = ScheduleDay.objects.get(day=days[reservation_date_day])
+              #  schedule_day = ScheduleDay.objects.get(day=days[reservation_date_day])
+                schedule_day = ScheduleDay.objects.get(day=days[reservation_date_day], gym=gym)
             except ScheduleDay.DoesNotExist:
                 return Response({'success': False, 'message': f'El dia {days[reservation_date_day]} no tiene un horario asignado.'}, status=status.HTTP_400_BAD_REQUEST)
 

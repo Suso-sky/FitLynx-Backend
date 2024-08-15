@@ -30,7 +30,7 @@ class ReportView(View):
                 'Código': [attendance.user.student_code for attendance in attendances],
                 'Fecha': [attendance.date.strftime('%Y-%m-%d') if isinstance(attendance.date, date) else attendance.date for attendance in attendances],
                 'Hora': [attendance.time.strftime('%H:%M:%S') if isinstance(attendance.time, time) else attendance.time for attendance in attendances],
-                'Cantidad Horas': [attendance.hours_amount for attendance in attendances],
+                'Módulo': [attendance.gym.name.split(' ')[0] for attendance in attendances],
             }
 
             df = pd.DataFrame(data)

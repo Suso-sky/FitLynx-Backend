@@ -89,10 +89,10 @@ class CreateAttendanceWithoutReservationView(APIView):
                 return Response({"success": False, "message": "El usuario no existe."}, status=status.HTTP_404_NOT_FOUND)
             # Create the attendance
             Attendance.objects.create(
-                usuario=user,
-                fecha=date,
-                hora=hour,
-                cantidad_horas=hours_amount,
+                user=user,
+                date=date,
+                time=hour,
+                hours_amount=hours_amount,
                 gym=gym
             )
 

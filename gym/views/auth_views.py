@@ -47,6 +47,7 @@ class LoginView(APIView):
                     "username": user.username,
                     "email": user.email,
                     "uid": user.uid,
+                    "id": user.id,
                     "is_admin": user.is_admin,
                     "photo_url": user.photo_url,
                     "access": str(refresh.access_token),
@@ -105,6 +106,9 @@ class CreateUserView(APIView):
         email = data.get('email')
         password = data.get('password')
         user_img = data.get('photo_url')
+
+        if User.objects.filter(student_code=student_code).exists():
+            return Response({"success": False, "message": f"Ya existe un usuario registrado con el código estudiantil {student_code}, intenta utilizando el tuyo (si se trata de un error, contacta con el administrador)"}, status=status.HTTP_403_FORBIDDEN)
 
         encrypted_password = make_password(password)
 

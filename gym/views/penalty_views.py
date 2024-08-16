@@ -18,7 +18,7 @@ class PenalizeView(APIView):
             end_date = start_date + timedelta(days=7)
             
             # Retrieve the reservation object
-            reservation = Reservation.objects.get(id_reservation=reservation_id)
+            reservation = Reservation.objects.get(reservation_id=reservation_id)
             user = reservation.user
             gym = reservation.gym
 

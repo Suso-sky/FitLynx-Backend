@@ -176,7 +176,6 @@ class PasswordResetRequestView(APIView):
             
             print(os.getenv('SENDGRID_API_KEY'))
 
-
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             client_domain = 'https://fitlynx.ddns.net/'

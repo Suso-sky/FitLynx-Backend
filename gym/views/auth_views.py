@@ -20,6 +20,14 @@ from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 
+
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from dotenv import load_dotenv
+
+load_dotenv('sendgrid.env')
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -39,6 +47,7 @@ class LoginView(APIView):
                     "username": user.username,
                     "email": user.email,
                     "uid": user.uid,
+                    "id": user.id,
                     "is_admin": user.is_admin,
                     "photo_url": user.photo_url,
                     "access": str(refresh.access_token),
@@ -97,6 +106,9 @@ class CreateUserView(APIView):
         email = data.get('email')
         password = data.get('password')
         user_img = data.get('photo_url')
+
+        if User.objects.filter(student_code=student_code).exists():
+            return Response({"success": False, "message": f"Ya existe un usuario registrado con el código estudiantil {student_code}, intenta utilizando el tuyo (si se trata de un error, contacta con el administrador)"}, status=status.HTTP_403_FORBIDDEN)
 
         encrypted_password = make_password(password)
 
@@ -162,6 +174,8 @@ class PasswordResetRequestView(APIView):
             if user.is_superuser or user.is_staff:
                 return Response({"success": False, "message": "No se puede restablecer la contraseña para este usuario."}, status=status.HTTP_403_FORBIDDEN)
             
+            print(os.getenv('SENDGRID_API_KEY'))
+
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             client_domain = 'https://fitlynx.ddns.net/'
@@ -172,15 +186,23 @@ class PasswordResetRequestView(APIView):
                 'uid': uid,
                 'token': token,
             })
-            email_message = EmailMessage(
-                mail_subject,
-                message,
-                'fitlynx@outlook.com',
-                [email],
+            
+            # Configurar el correo electrónico utilizando SendGrid
+            email_message = Mail(
+                from_email='fitlynx@outlook.com',
+                to_emails=email,
+                subject=mail_subject,
+                html_content=message
             )
-            email_message.content_subtype = 'html'
-            email_message.send()
-            return Response({"success": True, "message": "Se ha enviado un correo electrónico con las instrucciones para restablecer la contraseña."}, status=status.HTTP_200_OK)
+            
+            try:
+                # Enviar el correo electrónico utilizando SendGrid API
+                sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                response = sg.send(email_message)
+                return Response({"success": True, "message": "Se ha enviado un correo electrónico con las instrucciones para restablecer la contraseña."}, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({"success": False, "message": f"Error al enviar el correo: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
         except User.DoesNotExist:
             return Response({"success": False, "message": "No existe un usuario con ese correo electrónico."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:

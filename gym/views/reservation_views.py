@@ -9,9 +9,21 @@ from dateutil.relativedelta import relativedelta, MO
 from django.db.models import Sum
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import exception_handler
 
 class CreateReservationView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def handle_exception(self, exc):
+        response = exception_handler(exc, self.get_exception_handler_context())
+
+        if response is not None and response.status_code in [403, 401]:
+            response.data = {
+                "success": False,
+                "message": "No tienes permiso para realizar esta acción. Debes estar autenticado."
+            }
+
+        return response
 
     def post(self, request, *args, **kwargs):
         try:
@@ -25,7 +37,7 @@ class CreateReservationView(APIView):
             gym_id = data.get('gym_id')
             gym = Gym.objects.get(pk=gym_id)
 
-            if user.is_admin:
+            if user.is_admin or user.is_superuser:
                 return Response({"success": False, "message": "Los administradores no pueden realizar reservas."}, status=status.HTTP_401_UNAUTHORIZED)
 
             try:

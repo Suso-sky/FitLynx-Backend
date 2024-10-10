@@ -9,21 +9,30 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.permissions import IsAuthenticated
 from gym.permissions import IsAdminUser
-
+from datetime import datetime
 
 class ReportView(View):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request, *args, **kwargs):
-        # Get the gym_id from the URL parameters
         gym_id = self.kwargs.get('gym_id') 
-
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')     
+         
         try:
-            # Filter attendances by the specified gym
+            if start_date_str and end_date_str:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+            else:
+                start_date = None
+                end_date = None
+
             gym = get_object_or_404(Gym, gym_id=gym_id)
             attendances = Attendance.objects.filter(gym=gym)
 
-            # Create a pandas DataFrame with attendance data
+            if start_date and end_date:
+                attendances = attendances.filter(date__range=[start_date, end_date])
+
             data = {
                 'Nombre': [attendance.user.username for attendance in attendances],
                 'Programa': [attendance.user.program for attendance in attendances],
@@ -34,15 +43,12 @@ class ReportView(View):
             }
 
             df = pd.DataFrame(data)
-
-            # Create an Excel workbook and write the DataFrame to a sheet
+            
             wb = Workbook()
             ws = wb.active
-
             for row in dataframe_to_rows(df, index=False, header=True):
                 ws.append(row)
 
-            # Adjust columns for better formatting
             for column in ws.columns:
                 max_length = 0
                 column = [cell for cell in column]
@@ -55,12 +61,11 @@ class ReportView(View):
                 adjusted_width = (max_length + 2)
                 ws.column_dimensions[column[0].column_letter].width = adjusted_width
 
-            # Configure HTTP response for Excel file download
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             response['Content-Disposition'] = 'attachment; filename=attendance_report.xlsx'
             wb.save(response)
 
             return response
-        
+
         except Exception as e:
             return HttpResponse(f'Error: {str(e)}', status=500)

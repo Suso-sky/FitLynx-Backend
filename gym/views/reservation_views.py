@@ -52,20 +52,22 @@ class CreateReservationView(APIView):
                 membership_user = Membership.objects.get(user=user, gym=gym, end_date__gte=current_date)
                 
             except Membership.DoesNotExist:
-                
-                last_monday = current_date + relativedelta(weekday=MO(-1))
-                total_attendance_hours = Attendance.objects.filter(
-                    user=user,
-                    gym=gym,
-                    date__gte=last_monday
-                ).aggregate(total_hours=Sum('hours_amount'))['total_hours'] or 0
-                is_pe_student = str(user.student_code).startswith('14810')
+                if current_date.weekday() != 6:
+                    print(current_date.weekday() == 6)
+                    last_monday = current_date + relativedelta(weekday=MO(-1))
+                    total_attendance_hours = Attendance.objects.filter(
+                        user=user,
+                        gym=gym,
+                        date__gte=last_monday
+                    ).aggregate(total_hours=Sum('hours_amount'))['total_hours'] or 0
+                    is_pe_student = str(user.student_code).startswith('14810')
 
-                if (is_pe_student and total_attendance_hours >= 4) or (not is_pe_student and total_attendance_hours >= 2):
-                    return Response({
-                        "success": False, 
-                        "message": "Has alcanzado tu límite semanal de asistencia gratuita, puedes reservar de nuevo la próxima semana o adquirir una memebresía. Para más informacion, acercarse a las instalaciones del gimnasio."
-                    }, status=status.HTTP_401_UNAUTHORIZED)
+                    if (is_pe_student and total_attendance_hours >= 4) or (not is_pe_student and total_attendance_hours >= 2):
+                        return Response({
+                            "success": False, 
+                            "message": "Has alcanzado tu límite semanal de asistencia gratuita, puedes reservar de nuevo la próxima semana o adquirir una memebresía. Para más informacion, acercarse a las instalaciones del gimnasio."
+                        }, status=status.HTTP_401_UNAUTHORIZED)
+                
 
             max_capacity = gym.max_capacity
             start_new_reservation = datetime.combine(reservation_date, reservation_time)

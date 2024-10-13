@@ -4,3 +4,4 @@ gym/__pycache__/
 gym/migrations/__pycache__/
 gym/views/__pycache__/
 venv/
+myenv/

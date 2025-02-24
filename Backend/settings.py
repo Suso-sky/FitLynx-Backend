@@ -88,8 +88,8 @@ DATABASES = {
         'NAME': '',
         'USER': '',
         'PASSWORD': '',
-        'HOST': 'localhost',  # o la dirección de tu servidor PostgreSQL
-        'PORT': '5432',       # el puerto por defecto de PostgreSQL
+        'HOST': 'localhost', 
+        'PORT': '5432',  
     }
 }
 
@@ -149,14 +149,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CORS configuration
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "https://localhost:4200", 
-    "https://fitlynx.ddns.net",
+    "http://localhost:4200", 
+    "https://fitlynx.bitpointer.co",
 ]
 
 # CSRF configuration
 CSRF_TRUSTED_ORIGINS = [
-    "https://localhost:4200", 
-    "https://fitlynx.ddns.net",
+    "http://localhost:4200", 
+    "https://fitlynx.bitpointer.co",
 ]
 
 # Secure cookies configuration

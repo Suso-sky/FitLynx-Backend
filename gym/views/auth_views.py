@@ -178,7 +178,7 @@ class PasswordResetRequestView(APIView):
 
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            client_domain = 'https://fitlynx.ddns.net/'
+            client_domain = 'https://fitlynx.bitpointer.co'
             mail_subject = 'Restablecer la contraseña'
             message = render_to_string('reset_password_email.html', {
                 'user': user,
